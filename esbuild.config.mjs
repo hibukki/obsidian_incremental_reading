@@ -39,6 +39,11 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
+	loader: {
+		".tsx": "tsx",
+		".ts": "ts"
+	},
+	jsx: "automatic"
 });
 
 if (prod) {

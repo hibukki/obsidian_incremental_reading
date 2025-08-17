@@ -1,4 +1,7 @@
 import { App, ItemView, WorkspaceLeaf, Plugin, PluginSettingTab, Setting, Notice, TFile, debounce, MarkdownView, Editor, requestUrl } from 'obsidian';
+import React from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import { CopilotPanel } from './src/components/CopilotPanel';
 
 interface ClaudeCopilotSettings {
 	apiKey: string;
@@ -33,13 +36,13 @@ const VIEW_TYPE_CLAUDE_COPILOT = "claude-copilot-view";
 
 class ClaudeCopilotView extends ItemView {
 	plugin: ClaudeCopilotPlugin;
-	contentEl: HTMLElement;
-	feedbackEl: HTMLElement;
-	debugEl: HTMLElement;
-	documentPreviewEl: HTMLElement;
-	errorEl: HTMLElement;
-	debugDetailsEl: HTMLElement;
-	isDebugOpen = false;
+	root: Root | null = null;
+	state = {
+		feedback: 'Waiting for document changes...',
+		isThinking: false,
+		documentPreview: '',
+		error: null as string | null
+	};
 
 	constructor(leaf: WorkspaceLeaf, plugin: ClaudeCopilotPlugin) {
 		super(leaf);
@@ -59,43 +62,30 @@ class ClaudeCopilotView extends ItemView {
 	}
 
 	async onOpen() {
-		const container = this.containerEl.children[1];
+		const container = this.containerEl.children[1] as HTMLElement;
 		container.empty();
-		container.addClass('claude-copilot-container');
 		
-		container.createEl("h4", { text: "Claude Copilot" });
-		
-		this.feedbackEl = container.createDiv({ cls: "claude-feedback" });
-		this.feedbackEl.createEl("div", { text: "Waiting for document changes...", cls: "placeholder-text" });
-		
-		const debugSection = container.createDiv({ cls: "debug-section" });
-		const debugHeader = debugSection.createDiv({ cls: "debug-header" });
-		debugHeader.createEl("span", { text: "Debug" });
-		const toggleButton = debugHeader.createEl("button", { text: "▶", cls: "debug-toggle" });
-		
-		this.debugDetailsEl = debugSection.createDiv({ cls: "debug-details" });
-		this.debugDetailsEl.style.display = "none";
-		
-		this.documentPreviewEl = this.debugDetailsEl.createDiv({ cls: "document-preview" });
-		this.documentPreviewEl.createEl("h5", { text: "Document Preview:" });
-		this.documentPreviewEl.createEl("pre", { cls: "preview-content" });
-		
-		this.errorEl = this.debugDetailsEl.createDiv({ cls: "error-log" });
-		this.errorEl.createEl("h5", { text: "Errors:" });
-		this.errorEl.createEl("div", { cls: "error-content" });
-		
-		toggleButton.addEventListener("click", () => {
-			this.isDebugOpen = !this.isDebugOpen;
-			if (this.isDebugOpen) {
-				this.debugDetailsEl.style.display = "block";
-				toggleButton.textContent = "▼";
-			} else {
-				this.debugDetailsEl.style.display = "none";
-				toggleButton.textContent = "▶";
-			}
-		});
-		
+		this.root = createRoot(container);
+		this.renderComponent();
 		this.addStyles();
+	}
+
+	renderComponent() {
+		if (!this.root) return;
+		
+		this.root.render(
+			React.createElement(CopilotPanel, {
+				feedback: this.state.feedback,
+				isThinking: this.state.isThinking,
+				documentPreview: this.state.documentPreview,
+				error: this.state.error
+			})
+		);
+	}
+
+	updateState(updates: Partial<typeof this.state>) {
+		this.state = { ...this.state, ...updates };
+		this.renderComponent();
 	}
 
 	addStyles() {
@@ -184,50 +174,37 @@ class ClaudeCopilotView extends ItemView {
 	}
 
 	updateDocumentPreview(content: string, cursorPos?: number) {
-		const previewContent = this.documentPreviewEl.querySelector(".preview-content");
-		if (previewContent) {
-			if (cursorPos !== undefined && cursorPos >= 0 && cursorPos <= content.length) {
-				const beforeCursor = content.substring(0, cursorPos);
-				const afterCursor = content.substring(cursorPos);
-				previewContent.textContent = beforeCursor + "<cursor/>" + afterCursor;
-			} else {
-				previewContent.textContent = content;
-			}
+		let preview = content;
+		if (cursorPos !== undefined && cursorPos >= 0 && cursorPos <= content.length) {
+			const beforeCursor = content.substring(0, cursorPos);
+			const afterCursor = content.substring(cursorPos);
+			preview = beforeCursor + "<cursor/>" + afterCursor;
 		}
+		this.updateState({ documentPreview: preview });
 	}
 
 	updateFeedback(feedback: string) {
-		this.feedbackEl.empty();
-		this.feedbackEl.removeClass("claude-thinking");
-		this.feedbackEl.createDiv({ text: feedback });
+		this.updateState({ feedback, isThinking: false });
 	}
 
 	showThinking() {
-		this.feedbackEl.empty();
-		this.feedbackEl.addClass("claude-thinking");
-		this.feedbackEl.createDiv({ text: "Claude is thinking...", cls: "placeholder-text" });
+		this.updateState({ isThinking: true });
 	}
 
 	showError(error: string) {
-		const errorContent = this.errorEl.querySelector(".error-content");
-		if (errorContent) {
-			const timestamp = new Date().toLocaleTimeString();
-			errorContent.textContent = `[${timestamp}] ${error}`;
-		}
-		
-		if (!this.isDebugOpen) {
-			new Notice(`Claude Copilot Error: ${error.substring(0, 100)}...`);
-		}
+		this.updateState({ error });
+		new Notice(`Claude Copilot Error: ${error.substring(0, 100)}...`);
 	}
 
 	clearError() {
-		const errorContent = this.errorEl.querySelector(".error-content");
-		if (errorContent) {
-			errorContent.textContent = "";
-		}
+		this.updateState({ error: null });
 	}
 
 	async onClose() {
+		if (this.root) {
+			this.root.unmount();
+			this.root = null;
+		}
 	}
 }
 
