@@ -1,10 +1,10 @@
-import { requestUrl } from 'obsidian';
-import { 
-	AnthropicClientConfig, 
-	AnthropicRequestBody, 
-	AnthropicResponse, 
-	AnthropicErrorResponse 
-} from '../types';
+import { requestUrl } from "obsidian";
+import {
+	AnthropicClientConfig,
+	AnthropicRequestBody,
+	AnthropicResponse,
+	AnthropicErrorResponse,
+} from "../types";
 
 export class AnthropicClient {
 	private config: AnthropicClientConfig;
@@ -22,16 +22,16 @@ export class AnthropicClient {
 	 * @returns The feedback text from Claude
 	 * @throws Error if the API request fails
 	 */
-	async queryForFeedback(prompt: string, maxTokens: number = 500): Promise<string> {
+	async queryForFeedback(prompt: string, maxTokens = 500): Promise<string> {
 		const requestBody: AnthropicRequestBody = {
 			model: this.config.model,
 			max_tokens: maxTokens,
 			messages: [
 				{
 					role: "user",
-					content: prompt
-				}
-			]
+					content: prompt,
+				},
+			],
 		};
 
 		// Log the curl command for debugging
@@ -51,9 +51,9 @@ export class AnthropicClient {
 				headers: {
 					"Content-Type": "application/json",
 					"x-api-key": this.config.apiKey,
-					"anthropic-version": this.apiVersion
+					"anthropic-version": this.apiVersion,
 				},
-				body: JSON.stringify(requestBody)
+				body: JSON.stringify(requestBody),
 			});
 
 			if (response.status !== 200) {
@@ -62,9 +62,8 @@ export class AnthropicClient {
 
 			const data: AnthropicResponse = JSON.parse(response.text);
 			console.log("Claude API Success Response:", data);
-			
-			return data.content[0]?.text || "No feedback available";
 
+			return data.content[0]?.text || "No feedback available";
 		} catch (error) {
 			console.error("Claude API Error:", error);
 			throw this.formatError(error);
@@ -89,7 +88,10 @@ export class AnthropicClient {
 			console.error("Failed to parse response as JSON");
 		}
 
-		const errorMessage = errorData.error?.message || response.text || `API Error: ${response.status}`;
+		const errorMessage =
+			errorData.error?.message ||
+			response.text ||
+			`API Error: ${response.status}`;
 		throw new Error(`HTTP ${response.status}: ${errorMessage}`);
 	}
 
@@ -99,16 +101,19 @@ export class AnthropicClient {
 	private formatError(error: unknown): Error {
 		if (error instanceof Error) {
 			if (error.message === "Failed to fetch") {
-				const detailedMessage = "Failed to fetch - This could be a CORS issue. Check console for details.";
+				const detailedMessage =
+					"Failed to fetch - This could be a CORS issue. Check console for details.";
 				console.error("Fetch failed - possible causes:");
-				console.error("1. CORS blocking (Obsidian may need to whitelist api.anthropic.com)");
+				console.error(
+					"1. CORS blocking (Obsidian may need to whitelist api.anthropic.com)"
+				);
 				console.error("2. Network connectivity issue");
 				console.error("3. Invalid API endpoint");
 				return new Error(detailedMessage);
 			}
 			return error;
 		}
-		
+
 		return new Error("Unknown error occurred");
 	}
 
