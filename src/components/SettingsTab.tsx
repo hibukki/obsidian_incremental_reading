@@ -18,9 +18,10 @@ const CLAUDE_MODELS = [
 
 interface SettingsProps {
 	plugin: ClaudeCopilotPlugin;
+	onModelChanged?: (model: string) => void;
 }
 
-const SettingsComponent: React.FC<SettingsProps> = ({ plugin }) => {
+const SettingsComponent: React.FC<SettingsProps> = ({ plugin, onModelChanged }) => {
 	const [apiKey, setApiKey] = useState(plugin.settings.apiKey);
 	const [model, setModel] = useState(plugin.settings.model);
 	const [debounceDelay, setDebounceDelay] = useState(plugin.settings.debounceDelay.toString());
@@ -36,6 +37,7 @@ const SettingsComponent: React.FC<SettingsProps> = ({ plugin }) => {
 		setModel(value);
 		plugin.settings.model = value;
 		await plugin.saveSettings();
+		onModelChanged?.(value);
 	};
 
 	const handleDebounceDelayChange = async (value: string) => {
@@ -142,10 +144,12 @@ const SettingsComponent: React.FC<SettingsProps> = ({ plugin }) => {
 export class ClaudeCopilotSettingTab extends PluginSettingTab {
 	plugin: ClaudeCopilotPlugin;
 	root: Root | null = null;
+	onModelChanged?: (model: string) => void;
 
-	constructor(app: App, plugin: ClaudeCopilotPlugin) {
+	constructor(app: App, plugin: ClaudeCopilotPlugin, onModelChanged?: (model: string) => void) {
 		super(app, plugin);
 		this.plugin = plugin;
+		this.onModelChanged = onModelChanged;
 	}
 
 	display(): void {
@@ -155,7 +159,8 @@ export class ClaudeCopilotSettingTab extends PluginSettingTab {
 		this.root = createRoot(containerEl);
 		this.root.render(
 			React.createElement(SettingsComponent, {
-				plugin: this.plugin
+				plugin: this.plugin,
+				onModelChanged: this.onModelChanged
 			})
 		);
 	}

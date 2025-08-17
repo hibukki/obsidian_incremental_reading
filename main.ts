@@ -20,18 +20,6 @@ const DEFAULT_SETTINGS: ClaudeCopilotSettings = {
 {{doc}}`
 }
 
-const CLAUDE_MODELS = [
-	'claude-3-5-haiku-latest',
-	'claude-3-5-haiku-20241022',
-	'claude-3-7-sonnet-latest',
-	'claude-3-7-sonnet-20250219',
-	'claude-sonnet-4-0',
-	'claude-sonnet-4-20250514',
-	'claude-opus-4-0',
-	'claude-opus-4-20250514',
-	'claude-opus-4-1',
-	'claude-opus-4-1-20250805'
-];
 
 const VIEW_TYPE_CLAUDE_COPILOT = "claude-copilot-view";
 
@@ -241,7 +229,9 @@ export default class ClaudeCopilotPlugin extends Plugin {
 			}
 		});
 
-		this.addSettingTab(new ClaudeCopilotSettingTab(this.app, this));
+		this.addSettingTab(new ClaudeCopilotSettingTab(this.app, this, (model: string) => {
+			console.log('Model changed to:', model);
+		}));
 		
 		this.debouncedUpdate = debounce(
 			this.queryClaudeForFeedback.bind(this),
