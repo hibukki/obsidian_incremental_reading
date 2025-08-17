@@ -1,7 +1,8 @@
-import { App, ItemView, WorkspaceLeaf, Plugin, PluginSettingTab, Setting, Notice, TFile, debounce, MarkdownView, Editor, requestUrl } from 'obsidian';
+import { App, ItemView, WorkspaceLeaf, Plugin, Notice, TFile, debounce, MarkdownView, Editor, requestUrl } from 'obsidian';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { CopilotPanel } from './src/components/CopilotPanel';
+import { ClaudeCopilotSettingTab } from './src/components/SettingsTab';
 
 interface ClaudeCopilotSettings {
 	apiKey: string;
@@ -469,77 +470,3 @@ export default class ClaudeCopilotPlugin extends Plugin {
 	}
 }
 
-class ClaudeCopilotSettingTab extends PluginSettingTab {
-	plugin: ClaudeCopilotPlugin;
-
-	constructor(app: App, plugin: ClaudeCopilotPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const {containerEl} = this;
-
-		containerEl.empty();
-
-		containerEl.createEl('h2', {text: 'Claude Copilot Settings'});
-
-		new Setting(containerEl)
-			.setName('Claude API Key')
-			.setDesc('Enter your Claude API key. Get one from console.anthropic.com')
-			.addText(text => text
-				.setPlaceholder('sk-ant-...')
-				.setValue(this.plugin.settings.apiKey)
-				.onChange(async (value) => {
-					this.plugin.settings.apiKey = value;
-					await this.plugin.saveSettings();
-				})
-				.inputEl.type = 'password');
-
-		new Setting(containerEl)
-			.setName('Claude Model')
-			.setDesc('Select which Claude model to use')
-			.addDropdown(dropdown => {
-				CLAUDE_MODELS.forEach(model => {
-					dropdown.addOption(model, model);
-				});
-				dropdown
-					.setValue(this.plugin.settings.model)
-					.onChange(async (value) => {
-						this.plugin.settings.model = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(containerEl)
-			.setName('Debounce Delay (ms)')
-			.setDesc('How long to wait after typing stops before querying Claude (in milliseconds)')
-			.addText(text => text
-				.setPlaceholder('2000')
-				.setValue(String(this.plugin.settings.debounceDelay))
-				.onChange(async (value) => {
-					const delay = parseInt(value);
-					if (!isNaN(delay) && delay > 0) {
-						this.plugin.settings.debounceDelay = delay;
-						await this.plugin.saveSettings();
-					}
-				}));
-
-		new Setting(containerEl)
-			.setName('Default Prompt Template')
-			.setDesc('Default prompt template (can be overridden by .claude_copilot/prompt.md)')
-			.addTextArea(text => text
-				.setPlaceholder('Enter prompt template...')
-				.setValue(this.plugin.settings.promptTemplate)
-				.onChange(async (value) => {
-					this.plugin.settings.promptTemplate = value;
-					await this.plugin.saveSettings();
-				})
-				.inputEl.rows = 10);
-
-		containerEl.createEl('p', {
-			text: 'To customize the prompt, create or edit the file: .claude_copilot/prompt.md',
-			cls: 'setting-item-description'
-		});
-	}
-}
