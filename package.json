@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-claude-copilot",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "AI-powered writing assistant for Obsidian using Claude",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
