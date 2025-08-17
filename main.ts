@@ -1,15 +1,12 @@
-import { App, ItemView, WorkspaceLeaf, Plugin, Notice, TFile, debounce, MarkdownView, Editor, requestUrl } from 'obsidian';
+import { App, ItemView, WorkspaceLeaf, Plugin, Notice, TFile, debounce, MarkdownView, Editor } from 'obsidian';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { CopilotPanel } from './src/components/CopilotPanel';
 import { ClaudeCopilotSettingTab } from './src/components/SettingsTab';
+import { ClaudeCopilotSettings } from './src/types';
+import { AnthropicClient } from './src/services/anthropicClient';
+import { insertCursorMarker } from './src/utils/cursor';
 
-interface ClaudeCopilotSettings {
-	apiKey: string;
-	model: string;
-	debounceDelay: number;
-	promptTemplate: string;
-}
 
 const DEFAULT_SETTINGS: ClaudeCopilotSettings = {
 	apiKey: '',
@@ -164,10 +161,8 @@ class ClaudeCopilotView extends ItemView {
 
 	updateDocumentPreview(content: string, cursorPos?: number) {
 		let preview = content;
-		if (cursorPos !== undefined && cursorPos >= 0 && cursorPos <= content.length) {
-			const beforeCursor = content.substring(0, cursorPos);
-			const afterCursor = content.substring(cursorPos);
-			preview = beforeCursor + "<cursor/>" + afterCursor;
+		if (cursorPos !== undefined) {
+			preview = insertCursorMarker(content, cursorPos);
 		}
 		this.updateState({ documentPreview: preview });
 	}
@@ -202,12 +197,19 @@ export default class ClaudeCopilotPlugin extends Plugin {
 	copilotView: ClaudeCopilotView;
 	debouncedUpdate: (content: string, cursorPos: number) => void;
 	lastActiveEditor: Editor | null = null;
+	anthropicClient: AnthropicClient;
 
 	async onload() {
 		console.log("Claude Copilot: Starting plugin load...");
 		try {
 			await this.loadSettings();
 			console.log("Claude Copilot: Settings loaded");
+
+			// Initialize Anthropic client
+			this.anthropicClient = new AnthropicClient({
+				apiKey: this.settings.apiKey,
+				model: this.settings.model
+			});
 		
 		this.registerView(
 			VIEW_TYPE_CLAUDE_COPILOT,
@@ -318,85 +320,15 @@ export default class ClaudeCopilotPlugin extends Plugin {
 		
 		try {
 			const promptTemplate = await this.loadPromptTemplate();
-			
-			let documentWithCursor = content;
-			if (cursorPos >= 0 && cursorPos <= content.length) {
-				documentWithCursor = content.substring(0, cursorPos) + "<cursor/>" + content.substring(cursorPos);
-			}
-			
+			const documentWithCursor = insertCursorMarker(content, cursorPos);
 			const prompt = promptTemplate.replace("{{doc}}", documentWithCursor);
 			
-			const requestBody = {
-				model: this.settings.model,
-				max_tokens: 500,
-				messages: [
-					{
-						role: "user",
-						content: prompt
-					}
-				]
-			};
-			
-			// Log the curl command for debugging
-			const curlCommand = `curl https://api.anthropic.com/v1/messages \\
-  -H "Content-Type: application/json" \\
-  -H "x-api-key: ${this.settings.apiKey.substring(0, 10)}..." \\
-  -H "anthropic-version: 2023-06-01" \\
-  -d '${JSON.stringify(requestBody, null, 2)}'`;
-			
-			console.log("Claude API Request (as curl):", curlCommand);
-			console.log("Full request body:", requestBody);
-			
-			const response = await requestUrl({
-				url: "https://api.anthropic.com/v1/messages",
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"x-api-key": this.settings.apiKey,
-					"anthropic-version": "2023-06-01"
-				},
-				body: JSON.stringify(requestBody)
-			});
-			
-			if (response.status !== 200) {
-				console.error("Claude API Error - Full Response:");
-				console.error("Status:", response.status);
-				console.error("Response Headers:", response.headers);
-				console.error("Response Body (raw):", response.text);
-				
-				let errorData;
-				try {
-					errorData = JSON.parse(response.text);
-					console.error("Response Body (parsed):", errorData);
-				} catch {
-					errorData = { error: { message: response.text } };
-					console.error("Failed to parse response as JSON");
-				}
-				
-				const errorMessage = errorData.error?.message || errorData.message || response.text || `API Error: ${response.status}`;
-				throw new Error(`HTTP ${response.status}: ${errorMessage}`);
-			}
-			
-			const data = JSON.parse(response.text);
-			console.log("Claude API Success Response:", data);
-			const feedback = data.content[0]?.text || "No feedback available";
-			
+			const feedback = await this.anthropicClient.queryForFeedback(prompt);
 			this.copilotView.updateFeedback(feedback);
 			
 		} catch (error) {
 			console.error("Claude API Error:", error);
-			let errorMessage = "Unknown error occurred";
-			
-			if (error instanceof Error) {
-				errorMessage = error.message;
-				if (error.message === "Failed to fetch") {
-					errorMessage = "Failed to fetch - This could be a CORS issue. Check console for details.";
-					console.error("Fetch failed - possible causes:");
-					console.error("1. CORS blocking (Obsidian may need to whitelist api.anthropic.com)");
-					console.error("2. Network connectivity issue");
-					console.error("3. Invalid API endpoint");
-				}
-			}
+			const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
 			
 			this.copilotView.showError(errorMessage);
 			this.copilotView.updateFeedback("Error getting feedback from Claude. Check debug section for details.");
@@ -448,6 +380,14 @@ export default class ClaudeCopilotPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		
+		// Update Anthropic client with new settings
+		if (this.anthropicClient) {
+			this.anthropicClient.updateConfig({
+				apiKey: this.settings.apiKey,
+				model: this.settings.model
+			});
+		}
 		
 		// Re-create debounced function if delay changed
 		if (this.debouncedUpdate) {
