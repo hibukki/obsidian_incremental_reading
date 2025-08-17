@@ -6,6 +6,7 @@ import { ClaudeCopilotSettingTab } from './src/components/SettingsTab';
 import { ClaudeCopilotSettings } from './src/types';
 import { AnthropicClient } from './src/services/anthropicClient';
 import { insertCursorMarker } from './src/utils/cursor';
+import { CLAUDE_COPILOT_FOLDER, CLAUDE_COPILOT_PROMPT_FILE } from './src/consts';
 
 
 const DEFAULT_SETTINGS: ClaudeCopilotSettings = {
@@ -336,7 +337,7 @@ export default class ClaudeCopilotPlugin extends Plugin {
 	}
 
 	async loadPromptTemplate(): Promise<string> {
-		const promptPath = ".claude_copilot/prompt.md";
+		const promptPath = CLAUDE_COPILOT_PROMPT_FILE;
 		const promptFile = this.app.vault.getAbstractFileByPath(promptPath);
 		
 		if (promptFile instanceof TFile) {
@@ -353,8 +354,8 @@ export default class ClaudeCopilotPlugin extends Plugin {
 
 	async ensurePromptFile() {
 		try {
-			const folderPath = ".claude_copilot";
-			const promptPath = ".claude_copilot/prompt.md";
+			const folderPath = CLAUDE_COPILOT_FOLDER;
+			const promptPath = CLAUDE_COPILOT_PROMPT_FILE;
 			
 			const folder = this.app.vault.getAbstractFileByPath(folderPath);
 			if (!folder) {

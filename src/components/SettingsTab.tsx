@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { App, PluginSettingTab } from 'obsidian';
 import { createRoot, Root } from 'react-dom/client';
 import type ClaudeCopilotPlugin from '../../main';
+import { CLAUDE_COPILOT_PROMPT_FILE } from '../consts';
 
 const CLAUDE_MODELS = [
 	'claude-3-5-haiku-latest',
@@ -120,7 +121,7 @@ const SettingsComponent: React.FC<SettingsProps> = ({ plugin, onModelChanged }) 
 				<div className="setting-item-info">
 					<div className="setting-item-name">Default Prompt Template</div>
 					<div className="setting-item-description">
-						Default prompt template (can be overridden by .claude_copilot/prompt.md)
+						Default prompt template (can be overridden by {CLAUDE_COPILOT_PROMPT_FILE})
 					</div>
 				</div>
 				<div className="setting-item-control">
@@ -135,7 +136,7 @@ const SettingsComponent: React.FC<SettingsProps> = ({ plugin, onModelChanged }) 
 			</div>
 
 			<p className="setting-item-description">
-				To customize the prompt, create or edit the file: .claude_copilot/prompt.md
+				To customize the prompt, create or edit the file: {CLAUDE_COPILOT_PROMPT_FILE}
 			</p>
 		</div>
 	);
