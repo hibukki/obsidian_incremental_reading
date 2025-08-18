@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ParsedXMLTag } from '../utils/xmlParser';
+import { usePersistentPanelState } from '../hooks/usePersistentPanelState';
 
 interface CollapsibleXMLTagProps {
 	xmlTag: ParsedXMLTag;
@@ -7,13 +8,13 @@ interface CollapsibleXMLTagProps {
 }
 
 export const CollapsibleXMLTag: React.FC<CollapsibleXMLTagProps> = ({ xmlTag, color }) => {
-	const [isExpanded, setIsExpanded] = useState(false);
+	const [isExpanded, toggleExpanded] = usePersistentPanelState(`xml-${xmlTag.tagName}`, false);
 
 	return (
 		<div className="xml-tag-container" style={{ borderLeftColor: color }}>
 			<div 
 				className="xml-tag-header" 
-				onClick={() => setIsExpanded(!isExpanded)}
+				onClick={toggleExpanded}
 				style={{ backgroundColor: `${color}15` }} // 15% opacity
 			>
 				<span className="xml-tag-name" style={{ color }}>

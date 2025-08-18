@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { XMLContentRenderer } from "./XMLContentRenderer";
+import { usePersistentPanelState } from "../hooks/usePersistentPanelState";
 
 interface CopilotPanelProps {
 	feedback: string;
@@ -14,7 +15,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
 	documentPreview,
 	error,
 }) => {
-	const [isDebugOpen, setIsDebugOpen] = useState(false);
+	const [isDebugOpen, toggleDebugOpen] = usePersistentPanelState('debug-section', false);
 
 	return (
 		<div className="claude-copilot-container">
@@ -24,7 +25,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
 
 			<DebugSection
 				isOpen={isDebugOpen}
-				onToggle={() => setIsDebugOpen(!isDebugOpen)}
+				onToggle={toggleDebugOpen}
 				documentPreview={documentPreview}
 				error={error}
 			/>
@@ -42,14 +43,14 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
 	isThinking,
 }) => {
 	return (
-		<div
-			className={`claude-feedback ${isThinking ? "claude-thinking" : ""}`}
-		>
-			{isThinking ? (
-				<div className="placeholder-text">Claude is thinking...</div>
-			) : feedback ? (
-				<XMLContentRenderer content={feedback} />
-			) : (
+		<div className="claude-feedback">
+			{feedback && <XMLContentRenderer content={feedback} />}
+			{isThinking && (
+				<div className="claude-thinking-indicator">
+					<div className="placeholder-text">Claude is thinking...</div>
+				</div>
+			)}
+			{!feedback && !isThinking && (
 				<div className="placeholder-text">
 					Waiting for document changes...
 				</div>

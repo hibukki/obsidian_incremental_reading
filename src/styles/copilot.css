@@ -67,14 +67,12 @@
 	margin-top: 8px;
 }
 
-.claude-thinking {
-	animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-	0% { opacity: 0.6; }
-	50% { opacity: 1; }
-	100% { opacity: 0.6; }
+.claude-thinking-indicator {
+	margin: 16px 0;
+	padding: 12px;
+	background: var(--background-secondary);
+	border-radius: 8px;
+	border-left: 3px solid var(--text-accent);
 }
 
 /* XML Tag Styles */
