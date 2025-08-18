@@ -54,7 +54,6 @@ class ClaudeCopilotView extends ItemView {
 		
 		this.root = createRoot(container);
 		this.renderComponent();
-		this.addStyles();
 	}
 
 	renderComponent() {
@@ -75,90 +74,6 @@ class ClaudeCopilotView extends ItemView {
 		this.renderComponent();
 	}
 
-	addStyles() {
-		const styleEl = document.createElement("style");
-		styleEl.textContent = `
-			.claude-copilot-container {
-				padding: 16px;
-				height: 100%;
-				overflow-y: auto;
-			}
-			
-			.claude-feedback {
-				margin: 16px 0;
-				padding: 12px;
-				background: var(--background-secondary);
-				border-radius: 8px;
-				min-height: 100px;
-			}
-			
-			.placeholder-text {
-				color: var(--text-muted);
-				font-style: italic;
-			}
-			
-			.debug-section {
-				margin-top: 20px;
-				border-top: 1px solid var(--background-modifier-border);
-				padding-top: 12px;
-			}
-			
-			.debug-header {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				cursor: pointer;
-				user-select: none;
-			}
-			
-			.debug-toggle {
-				background: none;
-				border: none;
-				cursor: pointer;
-				font-size: 12px;
-				padding: 4px;
-			}
-			
-			.debug-details {
-				margin-top: 12px;
-			}
-			
-			.document-preview, .error-log {
-				margin: 12px 0;
-			}
-			
-			.preview-content {
-				background: var(--code-background);
-				padding: 8px;
-				border-radius: 4px;
-				font-size: 12px;
-				white-space: pre-wrap;
-				word-wrap: break-word;
-				max-height: 200px;
-				overflow-y: auto;
-			}
-			
-			.error-content {
-				color: var(--text-error);
-				font-size: 12px;
-				padding: 8px;
-				background: var(--background-primary);
-				border-radius: 4px;
-				margin-top: 8px;
-			}
-			
-			.claude-thinking {
-				animation: pulse 1.5s ease-in-out infinite;
-			}
-			
-			@keyframes pulse {
-				0% { opacity: 0.6; }
-				50% { opacity: 1; }
-				100% { opacity: 0.6; }
-			}
-		`;
-		document.head.appendChild(styleEl);
-	}
 
 	updateDocumentPreview(content: string, cursorPos?: number) {
 		let preview = content;
