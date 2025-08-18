@@ -1,10 +1,10 @@
 import { App, ItemView, WorkspaceLeaf, Plugin, Notice, TFile, debounce, MarkdownView, Editor } from 'obsidian';
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
-import { CopilotPanel } from './src/components/CopilotPanel';
+import { CopilotApp } from './src/components/CopilotApp';
 import { ClaudeCopilotSettingTab } from './src/components/SettingsTab';
 import { ClaudeCopilotSettings } from './src/types';
-import { AnthropicClient } from './src/services/anthropicClient';
+import { Settings, CopilotReactAPI } from './src/types/copilotState';
 import { insertCursorMarker } from './src/utils/cursor';
 import { CLAUDE_COPILOT_FOLDER, CLAUDE_COPILOT_PROMPT_FILE } from './src/consts';
 
@@ -23,13 +23,8 @@ const VIEW_TYPE_CLAUDE_COPILOT = "claude-copilot-view";
 
 class ClaudeCopilotView extends ItemView {
 	plugin: ClaudeCopilotPlugin;
-	root: Root | null = null;
-	state = {
-		feedback: 'Waiting for document changes...',
-		isThinking: false,
-		documentPreview: '',
-		error: null as string | null
-	};
+	private root: Root | null = null;
+	private reactAPI: CopilotReactAPI | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: ClaudeCopilotPlugin) {
 		super(leaf);
@@ -53,126 +48,95 @@ class ClaudeCopilotView extends ItemView {
 		container.empty();
 		
 		this.root = createRoot(container);
-		this.renderComponent();
-	}
-
-	renderComponent() {
-		if (!this.root) return;
+		
+		// Convert ClaudeCopilotSettings to our new Settings format
+		const initialSettings: Settings = {
+			apiKey: this.plugin.settings.apiKey,
+			model: this.plugin.settings.model,
+			debounceDelayMs: this.plugin.settings.debounceDelay,
+			promptTemplate: await this.plugin.loadPromptTemplate()
+		};
 		
 		this.root.render(
-			React.createElement(CopilotPanel, {
-				feedback: this.state.feedback,
-				isThinking: this.state.isThinking,
-				documentPreview: this.state.documentPreview,
-				error: this.state.error
+			React.createElement(CopilotApp, {
+				initialSettings,
+				onApiReady: (api: CopilotReactAPI) => {
+					this.reactAPI = api;
+					this.plugin.onCopilotReady(api);
+				}
 			})
 		);
 	}
 
-	updateState(updates: Partial<typeof this.state>) {
-		this.state = { ...this.state, ...updates };
-		this.renderComponent();
+	// Simple proxy methods that delegate to React
+	onEditorContentChanged(content: string, cursorPosition: number) {
+		this.reactAPI?.onEditorContentChanged(content, cursorPosition);
 	}
 
-
-	updateDocumentPreview(content: string, cursorPos?: number) {
-		let preview = content;
-		if (cursorPos !== undefined) {
-			preview = insertCursorMarker(content, cursorPos);
-		}
-		this.updateState({ documentPreview: preview });
-	}
-
-	updateFeedback(feedback: string) {
-		this.updateState({ feedback, isThinking: false });
-	}
-
-	showThinking() {
-		this.updateState({ isThinking: true });
-	}
-
-	showError(error: string) {
-		this.updateState({ error });
-		new Notice(`Claude Copilot Error: ${error.substring(0, 100)}...`);
-	}
-
-	clearError() {
-		this.updateState({ error: null });
+	updateSettings(settings: Partial<Settings>) {
+		this.reactAPI?.updateSettings(settings);
 	}
 
 	async onClose() {
+		this.reactAPI?.cancelPendingQueries();
 		if (this.root) {
 			this.root.unmount();
 			this.root = null;
 		}
+		this.reactAPI = null;
 	}
 }
 
 export default class ClaudeCopilotPlugin extends Plugin {
 	settings: ClaudeCopilotSettings;
 	copilotView: ClaudeCopilotView;
-	debouncedUpdate: (content: string, cursorPos: number) => void;
-	lastActiveEditor: Editor | null = null;
-	anthropicClient: AnthropicClient;
+	private reactAPI: CopilotReactAPI | null = null;
 
 	async onload() {
 		console.log("Claude Copilot: Starting plugin load...");
 		try {
 			await this.loadSettings();
 			console.log("Claude Copilot: Settings loaded");
-
-			// Initialize Anthropic client
-			this.anthropicClient = new AnthropicClient({
-				apiKey: this.settings.apiKey,
-				model: this.settings.model
-			});
 		
-		this.registerView(
-			VIEW_TYPE_CLAUDE_COPILOT,
-			(leaf) => {
-				this.copilotView = new ClaudeCopilotView(leaf, this);
-				return this.copilotView;
-			}
-		);
-
-		this.addRibbonIcon("bot", "Claude Copilot", () => {
-			this.activateView();
-		});
-
-		this.addCommand({
-			id: "open-claude-copilot",
-			name: "Open Claude Copilot",
-			callback: () => {
-				this.activateView();
-			}
-		});
-
-		this.addSettingTab(new ClaudeCopilotSettingTab(this.app, this, (model: string) => {
-			console.log('Model changed to:', model);
-		}));
-		
-		this.debouncedUpdate = debounce(
-			this.queryClaudeForFeedback.bind(this),
-			this.settings.debounceDelay,
-			true
-		);
-		
-		this.registerEvent(
-			this.app.workspace.on("editor-change", (editor: Editor, info: MarkdownView) => {
-				this.handleDocumentChange(editor, info);
-			})
-		);
-		
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", () => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
-					this.lastActiveEditor = view.editor;
-					this.handleDocumentChange(view.editor, view);
+			this.registerView(
+				VIEW_TYPE_CLAUDE_COPILOT,
+				(leaf) => {
+					this.copilotView = new ClaudeCopilotView(leaf, this);
+					return this.copilotView;
 				}
-			})
-		);
-		
+			);
+
+			this.addRibbonIcon("bot", "Claude Copilot", () => {
+				this.activateView();
+			});
+
+			this.addCommand({
+				id: "open-claude-copilot",
+				name: "Open Claude Copilot",
+				callback: () => {
+					this.activateView();
+				}
+			});
+
+			this.addSettingTab(new ClaudeCopilotSettingTab(this.app, this, (model: string) => {
+				this.onModelChanged(model);
+			}));
+			
+			this.registerEvent(
+				this.app.workspace.on("editor-change", (editor: Editor, info: MarkdownView) => {
+					this.handleDocumentChange(editor, info);
+				})
+			);
+			
+			this.registerEvent(
+				this.app.workspace.on("active-leaf-change", () => {
+					const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+					if (view) {
+						this.handleDocumentChange(view.editor, view);
+					}
+				})
+			);
+			
 			await this.ensurePromptFile();
 			console.log("Claude Copilot: Prompt file ensured");
 			
@@ -212,43 +176,22 @@ export default class ClaudeCopilotPlugin extends Plugin {
 		}
 	}
 
+	onCopilotReady(api: CopilotReactAPI) {
+		this.reactAPI = api;
+	}
+
 	handleDocumentChange(editor: Editor, _view: MarkdownView) {
-		if (!this.copilotView) return;
-		
 		const content = editor.getValue();
 		const cursor = editor.getCursor();
 		const cursorPos = editor.posToOffset(cursor);
 		
-		this.copilotView.updateDocumentPreview(content, cursorPos);
-		
-		if (this.settings.apiKey) {
-			this.debouncedUpdate(content, cursorPos);
-		} else {
-			this.copilotView.updateFeedback("Please configure your Claude API key in settings.");
-		}
+		// Delegate to React
+		this.copilotView?.onEditorContentChanged(content, cursorPos);
 	}
 
-	async queryClaudeForFeedback(content: string, cursorPos: number) {
-		if (!this.copilotView) return;
-		
-		this.copilotView.showThinking();
-		this.copilotView.clearError();
-		
-		try {
-			const promptTemplate = await this.loadPromptTemplate();
-			const documentWithCursor = insertCursorMarker(content, cursorPos);
-			const prompt = promptTemplate.replace("{{doc}}", documentWithCursor);
-			
-			const feedback = await this.anthropicClient.queryForFeedback(prompt);
-			this.copilotView.updateFeedback(feedback);
-			
-		} catch (error) {
-			console.error("Claude API Error:", error);
-			const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-			
-			this.copilotView.showError(errorMessage);
-			this.copilotView.updateFeedback("Error getting feedback from Claude. Check debug section for details.");
-		}
+	onModelChanged(model: string) {
+		console.log('Model changed to:', model);
+		this.reactAPI?.updateSettings({ model });
 	}
 
 	async loadPromptTemplate(): Promise<string> {
@@ -297,22 +240,13 @@ export default class ClaudeCopilotPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 		
-		// Update Anthropic client with new settings
-		if (this.anthropicClient) {
-			this.anthropicClient.updateConfig({
-				apiKey: this.settings.apiKey,
-				model: this.settings.model
-			});
-		}
-		
-		// Re-create debounced function if delay changed
-		if (this.debouncedUpdate) {
-			this.debouncedUpdate = debounce(
-				this.queryClaudeForFeedback.bind(this),
-				this.settings.debounceDelay,
-				true
-			);
-		}
+		// Sync settings to React
+		this.reactAPI?.updateSettings({
+			apiKey: this.settings.apiKey,
+			model: this.settings.model,
+			debounceDelayMs: this.settings.debounceDelay,
+			promptTemplate: await this.loadPromptTemplate()
+		});
 	}
 }
 
