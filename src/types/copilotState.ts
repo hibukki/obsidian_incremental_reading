@@ -17,6 +17,7 @@ export type QueryState =
 export interface CopilotAppState {
 	settings: Settings;
 	queryState: QueryState;
+	lastSuccessfulFeedback: string | null;
 }
 
 // API contract between Obsidian and React

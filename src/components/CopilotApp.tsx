@@ -17,6 +17,7 @@ export const CopilotApp: React.FC<CopilotAppProps> = ({
 }) => {
 	const [settings, setSettings] = useState<Settings>(initialSettings);
 	const [queryState, setQueryState] = useState<QueryState>({ status: 'idle' });
+	const [lastSuccessfulFeedback, setLastSuccessfulFeedback] = useState<string | null>(null);
 	
 	// Keep reference to anthropic client
 	const anthropicClientRef = useRef<AnthropicClient | null>(null);
@@ -62,6 +63,7 @@ export const CopilotApp: React.FC<CopilotAppProps> = ({
 				
 				const feedback = await anthropicClientRef.current.queryForFeedback(prompt);
 				setQueryState({ status: 'success', feedback });
+				setLastSuccessfulFeedback(feedback);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 				setQueryState({ 
@@ -110,6 +112,7 @@ export const CopilotApp: React.FC<CopilotAppProps> = ({
 		<SettingsProvider settings={settings}>
 			<CopilotPanel 
 				queryState={queryState}
+				lastSuccessfulFeedback={lastSuccessfulFeedback}
 				onRetry={handleRetry}
 			/>
 		</SettingsProvider>

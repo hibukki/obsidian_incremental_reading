@@ -7,11 +7,13 @@ import { insertCursorMarker } from "../utils/cursor";
 
 interface CopilotPanelProps {
 	queryState: QueryState;
+	lastSuccessfulFeedback: string | null;
 	onRetry?: () => void;
 }
 
 export const CopilotPanel: React.FC<CopilotPanelProps> = ({
 	queryState,
+	lastSuccessfulFeedback,
 	onRetry,
 }) => {
 	const [isDebugOpen, toggleDebugOpen] = usePersistentPanelState('debug-section', false);
@@ -25,7 +27,11 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
 		<div className="claude-copilot-container">
 			<h4>Claude Copilot</h4>
 
-			<FeedbackSection queryState={queryState} onRetry={onRetry} />
+			<FeedbackSection 
+				queryState={queryState} 
+				lastSuccessfulFeedback={lastSuccessfulFeedback}
+				onRetry={onRetry} 
+			/>
 
 			<DebugSection
 				isOpen={isDebugOpen}
@@ -39,39 +45,56 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
 
 interface FeedbackSectionProps {
 	queryState: QueryState;
+	lastSuccessfulFeedback: string | null;
 	onRetry?: () => void;
 }
 
 const FeedbackSection: React.FC<FeedbackSectionProps> = ({
 	queryState,
+	lastSuccessfulFeedback,
 	onRetry,
 }) => {
-	return (
-		<div className="claude-feedback">
-			{queryState.status === 'idle' && (
-				<div className="placeholder-text">
-					Waiting for document changes...
-				</div>
-			)}
-			
-			{queryState.status === 'querying' && (
-				<div className="claude-thinking-indicator">
-					<div className="placeholder-text">Claude is thinking...</div>
-				</div>
-			)}
-			
-			{queryState.status === 'success' && (
-				<XMLContentRenderer content={queryState.feedback} />
-			)}
-			
-			{queryState.status === 'error' && (
+	// Helper to get the most recent feedback for display
+	const getDisplayContent = () => {
+		if (queryState.status === 'success') {
+			return <XMLContentRenderer content={queryState.feedback} />;
+		}
+		if (queryState.status === 'error') {
+			return (
 				<ErrorDisplay 
 					error={queryState.error}
 					occurredAt={queryState.occurredAt}
 					canRetry={canRetryError(queryState.error)}
 					onRetry={onRetry}
 				/>
-			)}
+			);
+		}
+		// For 'idle' and 'querying', show previous feedback or placeholder
+		if (queryState.status === 'querying' && lastSuccessfulFeedback) {
+			return <XMLContentRenderer content={lastSuccessfulFeedback} />;
+		}
+		
+		return (
+			<div className="placeholder-text">
+				Waiting for document changes...
+			</div>
+		);
+	};
+
+	return (
+		<div className="claude-feedback">
+			{/* Always render thinking indicator to maintain layout */}
+			<div 
+				className="claude-thinking-indicator"
+				style={{ 
+					visibility: queryState.status === 'querying' ? 'visible' : 'hidden'
+				}}
+			>
+				<div className="placeholder-text">Claude is thinking...</div>
+			</div>
+			
+			{/* Main content area */}
+			{getDisplayContent()}
 		</div>
 	);
 };
