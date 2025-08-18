@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { XMLContentRenderer } from './XMLContentRenderer';
 
 interface CopilotPanelProps {
 	feedback: string;
@@ -42,7 +43,7 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({ feedback, isThinking 
 			{isThinking ? (
 				<div className="placeholder-text">Claude is thinking...</div>
 			) : feedback ? (
-				<div>{feedback}</div>
+				<XMLContentRenderer content={feedback} />
 			) : (
 				<div className="placeholder-text">Waiting for document changes...</div>
 			)}
