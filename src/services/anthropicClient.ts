@@ -1,4 +1,4 @@
-import { requestUrl } from "obsidian";
+import { requestUrl, RequestUrlResponse } from "obsidian";
 import {
 	AnthropicClientConfig,
 	AnthropicRequestBody,
@@ -73,7 +73,9 @@ export class AnthropicClient {
 	/**
 	 * Handle error responses from the Anthropic API
 	 */
-	private async handleErrorResponse(response: any): Promise<never> {
+	private async handleErrorResponse(
+		response: RequestUrlResponse
+	): Promise<never> {
 		console.error("Claude API Error - Full Response:");
 		console.error("Status:", response.status);
 		console.error("Response Headers:", response.headers);
