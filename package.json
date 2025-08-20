@@ -5,6 +5,7 @@
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
+		"dev:link": "ln -s \"$PWD\" \"$npm_config_vault/.obsidian/plugins/claude-copilot\"",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"lint": "eslint src/**/*.ts",
 		"format": "prettier --write .",

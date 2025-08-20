@@ -11,10 +11,10 @@ This is a fork of the [Obsidian Plugin Template](https://github.com/obsidianmd/o
 - `npm install`
 - `npm run dev` to start compilation in watch mode.
 
-## Manually installing the plugin
+## Installing the plugin for development
 
 ```sh
-ln -s "/PATH/TO/CURRENT/FOLDER" "/PATH/TO/OBSIDIAN/VAULT/.obsidian/plugins/OBSIDIAN-PLUGIN-NAME"
+npm run dev:link --vault=/path/to/your/vault
 ```
 
 ## Improve code quality with eslint (optional)
