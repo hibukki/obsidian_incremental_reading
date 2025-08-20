@@ -8,11 +8,11 @@ export interface Settings {
 }
 
 // Discriminated union for query state - prevents invalid state combinations
-export type QueryState = 
-	| { status: 'idle' }
-	| { status: 'querying' }
-	| { status: 'success'; feedback: string }
-	| { status: 'error'; error: string; occurredAt: Date };
+export type QueryState =
+	| { status: "idle" }
+	| { status: "querying" }
+	| { status: "success"; feedback: string }
+	| { status: "error"; error: string; occurredAt: Date };
 
 export interface CopilotAppState {
 	settings: Settings;
@@ -28,9 +28,9 @@ export interface CopilotReactAPI {
 }
 
 // Derived value functions (computed, not stored)
-export const hasValidApiKey = (settings: Settings): boolean => 
+export const hasValidApiKey = (settings: Settings): boolean =>
 	settings.apiKey.length > 0;
 
-export const canRetryError = (error: string): boolean => 
-	!error.toLowerCase().includes('invalid api key') && 
-	!error.toLowerCase().includes('authentication');
+export const canRetryError = (error: string): boolean =>
+	!error.toLowerCase().includes("invalid api key") &&
+	!error.toLowerCase().includes("authentication");

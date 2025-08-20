@@ -74,7 +74,7 @@ export class AnthropicClient {
 	 * Handle error responses from the Anthropic API
 	 */
 	private async handleErrorResponse(
-		response: RequestUrlResponse
+		response: RequestUrlResponse,
 	): Promise<never> {
 		console.error("Claude API Error - Full Response:");
 		console.error("Status:", response.status);
@@ -107,7 +107,7 @@ export class AnthropicClient {
 					"Failed to fetch - This could be a CORS issue. Check console for details.";
 				console.error("Fetch failed - possible causes:");
 				console.error(
-					"1. CORS blocking (Obsidian may need to whitelist api.anthropic.com)"
+					"1. CORS blocking (Obsidian may need to whitelist api.anthropic.com)",
 				);
 				console.error("2. Network connectivity issue");
 				console.error("3. Invalid API endpoint");

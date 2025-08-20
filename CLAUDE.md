@@ -41,6 +41,7 @@ This is an Obsidian plugin that provides AI-powered writing assistance using Cla
 ### Build System
 
 Uses esbuild for bundling with:
+
 - TypeScript compilation
 - React JSX transformation
 - External dependencies (Obsidian API, CodeMirror)
@@ -56,6 +57,7 @@ Uses esbuild for bundling with:
 ### Plugin Installation
 
 The plugin creates a symbolic link for development:
+
 ```sh
 ln -s "/PATH/TO/CURRENT/FOLDER" "/PATH/TO/OBSIDIAN/VAULT/.obsidian/plugins/OBSIDIAN-PLUGIN-NAME"
 ```

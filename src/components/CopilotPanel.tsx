@@ -18,7 +18,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
 }) => {
 	const [isDebugOpen, toggleDebugOpen] = usePersistentPanelState(
 		"debug-section",
-		false
+		false,
 	);
 	const settings = useSettings();
 

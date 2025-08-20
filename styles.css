@@ -52,7 +52,8 @@ This CSS file is automatically loaded by Obsidian when the plugin is enabled.
 	margin-top: 12px;
 }
 
-.document-preview, .error-log {
+.document-preview,
+.error-log {
 	margin: 12px 0;
 }
 
@@ -90,9 +91,15 @@ This CSS file is automatically loaded by Obsidian when the plugin is enabled.
 }
 
 @keyframes pulse {
-	0% { opacity: 0.6; }
-	50% { opacity: 1; }
-	100% { opacity: 0.6; }
+	0% {
+		opacity: 0.6;
+	}
+	50% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0.6;
+	}
 }
 
 /* XML Tag Card Styles */

@@ -71,16 +71,16 @@ export const CopilotApp: React.FC<CopilotAppProps> = ({
 					try {
 						const documentWithCursor = insertCursorMarker(
 							content,
-							cursorPosition
+							cursorPosition,
 						);
 						const prompt = settings.promptTemplate.replace(
 							"{{doc}}",
-							documentWithCursor
+							documentWithCursor,
 						);
 
 						const feedback =
 							await anthropicClientRef.current.queryForFeedback(
-								prompt
+								prompt,
 							);
 						setQueryState({ status: "success", feedback });
 						setLastSuccessfulFeedback(feedback);
@@ -97,14 +97,14 @@ export const CopilotApp: React.FC<CopilotAppProps> = ({
 					}
 				},
 				settings.debounceDelayMs,
-				true // Only use the last call, keep waiting until the user finishes typing
+				true, // Only use the last call, keep waiting until the user finishes typing
 			),
 		[
 			settings.debounceDelayMs,
 			settings.apiKey,
 			settings.model,
 			settings.promptTemplate,
-		]
+		],
 	);
 
 	// Handle retry for failed queries
