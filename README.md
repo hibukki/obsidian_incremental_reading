@@ -4,14 +4,23 @@
 
 This is a fork of the [Obsidian Plugin Template](https://github.com/obsidianmd/obsidian-sample-plugin).
 
-## How to use
+## Usage
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm install`
-- `npm run dev` to start compilation in watch mode.
+### npm install
 
-## Installing the plugin for development
+```sh
+npm install
+```
+
+### Build
+
+This watches for changes and compiles the plugin.
+
+```sh
+npm run dev
+```
+
+### Connect to your Obsidian vault
 
 ```sh
 npm run dev:link --vault=/path/to/your/vault
