@@ -16,7 +16,10 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
 	lastSuccessfulFeedback,
 	onRetry,
 }) => {
-	const [isDebugOpen, toggleDebugOpen] = usePersistentPanelState('debug-section', false);
+	const [isDebugOpen, toggleDebugOpen] = usePersistentPanelState(
+		"debug-section",
+		false
+	);
 	const settings = useSettings();
 
 	// Compute document preview from current editor state (when available)
@@ -27,10 +30,10 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
 		<div className="claude-copilot-container">
 			<h4>Claude Copilot</h4>
 
-			<FeedbackSection 
-				queryState={queryState} 
+			<FeedbackSection
+				queryState={queryState}
 				lastSuccessfulFeedback={lastSuccessfulFeedback}
-				onRetry={onRetry} 
+				onRetry={onRetry}
 			/>
 
 			<DebugSection
@@ -56,33 +59,39 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
 }) => {
 	return (
 		<div className="claude-feedback">
-			{/* Always render thinking indicator to maintain layout */}
-			<div 
-				className="claude-thinking-indicator"
-				style={{ 
-					visibility: queryState.status === 'querying' ? 'visible' : 'hidden'
-				}}
-			>
-				<div className="placeholder-text">Claude is thinking...</div>
-			</div>
-			
-			{/* Main content area - show error, feedback, or waiting message */}
-			{queryState.status === 'error' ? (
-				<ErrorDisplay 
+			{queryState.status === "error" && (
+				<ErrorDisplay
 					error={queryState.error}
 					occurredAt={queryState.occurredAt}
 					canRetry={canRetryError(queryState.error)}
 					onRetry={onRetry}
 				/>
-			) : (queryState.status === 'success' && queryState.feedback) ? (
-				<XMLContentRenderer content={queryState.feedback} />
+			)}
+
+			{queryState.status === "success" ? (
+				queryState.feedback && (
+					<XMLContentRenderer content={queryState.feedback} />
+				)
 			) : lastSuccessfulFeedback ? (
 				<XMLContentRenderer content={lastSuccessfulFeedback} />
 			) : (
-				<div className="placeholder-text">
-					Waiting for document changes...
-				</div>
+				queryState.status === "idle" && (
+					<div className="placeholder-text">
+						Waiting for document changes...
+					</div>
+				)
 			)}
+
+			{/* Always render thinking indicator to maintain layout */}
+			<div
+				className="claude-thinking-indicator"
+				style={{
+					visibility:
+						queryState.status === "querying" ? "visible" : "hidden",
+				}}
+			>
+				<div className="placeholder-text">Claude is thinking...</div>
+			</div>
 		</div>
 	);
 };
@@ -140,9 +149,10 @@ const ErrorLog: React.FC<ErrorLogProps> = ({ queryState }) => {
 		<div className="error-log">
 			<h5>Errors:</h5>
 			<div className="error-content">
-				{queryState.status === 'error' && 
-					`[${queryState.occurredAt.toLocaleTimeString()}] ${queryState.error}`
-				}
+				{queryState.status === "error" &&
+					`[${queryState.occurredAt.toLocaleTimeString()}] ${
+						queryState.error
+					}`}
 			</div>
 			<h5>Developer tools:</h5>
 			<p>View {"-->"} Toggle Developer Tools (⌥+⌘+I)</p>
@@ -165,9 +175,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 }) => {
 	return (
 		<div className="error-display">
-			<div className="error-message">
-				⚠️ Error: {error}
-			</div>
+			<div className="error-message">⚠️ Error: {error}</div>
 			<div className="error-timestamp">
 				Occurred at {occurredAt.toLocaleTimeString()}
 			</div>
