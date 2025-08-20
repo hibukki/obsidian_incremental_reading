@@ -212,16 +212,16 @@ export default class ClaudeCopilotPlugin extends Plugin {
 		const promptPath = CLAUDE_COPILOT_PROMPT_FILE;
 		const promptFile = this.app.vault.getAbstractFileByPath(promptPath);
 
-		if (promptFile instanceof TFile) {
-			try {
-				const content = await this.app.vault.read(promptFile);
-				return content;
-			} catch (error) {
-				console.error("Error reading prompt file:", error);
-			}
+		if (!(promptFile instanceof TFile)) {
+			throw new Error(`Prompt file not found: ${promptPath}`);
 		}
 
-		return this.settings.promptTemplate;
+		try {
+			const content = await this.app.vault.read(promptFile);
+			return content;
+		} catch (error) {
+			throw new Error(`Error reading prompt file: ${error}`);
+		}
 	}
 
 	async ensurePromptFile() {
