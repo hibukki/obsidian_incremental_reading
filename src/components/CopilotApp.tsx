@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { debounce } from "obsidian";
+import { debounce, App } from "obsidian";
 import {
 	Settings,
 	QueryState,
@@ -10,15 +10,18 @@ import { SettingsProvider } from "../contexts/SettingsContext";
 import { CopilotPanel } from "./CopilotPanel";
 import { AnthropicClient } from "../services/anthropicClient";
 import { insertCursorMarker } from "../utils/cursor";
+import { getPromptTemplate } from "../services/promptTemplate";
 
 interface CopilotAppProps {
 	initialSettings: Settings;
 	onApiReady: (api: CopilotReactAPI) => void;
+	app: App;
 }
 
 export const CopilotApp: React.FC<CopilotAppProps> = ({
 	initialSettings,
 	onApiReady,
+	app,
 }) => {
 	const [settings, setSettings] = useState<Settings>(initialSettings);
 	const [queryState, setQueryState] = useState<QueryState>({
@@ -28,7 +31,6 @@ export const CopilotApp: React.FC<CopilotAppProps> = ({
 		string | null
 	>(null);
 
-	// Keep reference to anthropic client
 	const anthropicClientRef = useRef<AnthropicClient | null>(null);
 
 	// Create/update AnthropicClient when settings change
@@ -73,7 +75,8 @@ export const CopilotApp: React.FC<CopilotAppProps> = ({
 							content,
 							cursorPosition,
 						);
-						const prompt = settings.promptTemplate.replace(
+						const promptTemplate = await getPromptTemplate(app);
+						const prompt = promptTemplate.replace(
 							"{{doc}}",
 							documentWithCursor,
 						);
@@ -99,12 +102,7 @@ export const CopilotApp: React.FC<CopilotAppProps> = ({
 				settings.debounceDelayMs,
 				true, // Only use the last call, keep waiting until the user finishes typing
 			),
-		[
-			settings.debounceDelayMs,
-			settings.apiKey,
-			settings.model,
-			settings.promptTemplate,
-		],
+		[settings.debounceDelayMs, settings.apiKey, settings.model, app],
 	);
 
 	// Handle retry for failed queries

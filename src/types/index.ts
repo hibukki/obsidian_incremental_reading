@@ -2,7 +2,6 @@ export interface ClaudeCopilotSettings {
 	apiKey: string;
 	model: string;
 	debounceDelay: number;
-	promptTemplate: string;
 }
 
 export interface AnthropicClientConfig {

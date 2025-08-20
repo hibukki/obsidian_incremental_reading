@@ -31,9 +31,6 @@ const SettingsComponent: React.FC<SettingsProps> = ({
 	const [debounceDelay, setDebounceDelay] = useState(
 		plugin.settings.debounceDelay.toString(),
 	);
-	const [promptTemplate, setPromptTemplate] = useState(
-		plugin.settings.promptTemplate,
-	);
 
 	const handleApiKeyChange = async (value: string) => {
 		setApiKey(value);
@@ -55,12 +52,6 @@ const SettingsComponent: React.FC<SettingsProps> = ({
 			plugin.settings.debounceDelay = delay;
 			await plugin.saveSettings();
 		}
-	};
-
-	const handlePromptTemplateChange = async (value: string) => {
-		setPromptTemplate(value);
-		plugin.settings.promptTemplate = value;
-		await plugin.saveSettings();
 	};
 
 	return (
@@ -124,29 +115,6 @@ const SettingsComponent: React.FC<SettingsProps> = ({
 						onChange={(e) =>
 							handleDebounceDelayChange(e.target.value)
 						}
-					/>
-				</div>
-			</div>
-
-			<div className="setting-item">
-				<div className="setting-item-info">
-					<div className="setting-item-name">
-						Default Prompt Template
-					</div>
-					<div className="setting-item-description">
-						Default prompt template (can be overridden by{" "}
-						{CLAUDE_COPILOT_PROMPT_FILE})
-					</div>
-				</div>
-				<div className="setting-item-control">
-					<textarea
-						placeholder="Enter prompt template..."
-						value={promptTemplate}
-						onChange={(e) =>
-							handlePromptTemplateChange(e.target.value)
-						}
-						rows={10}
-						spellCheck={false}
 					/>
 				</div>
 			</div>

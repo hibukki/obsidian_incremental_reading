@@ -4,7 +4,6 @@ export interface Settings {
 	apiKey: string;
 	model: string;
 	debounceDelayMs: number;
-	promptTemplate: string;
 }
 
 // Discriminated union for query state - prevents invalid state combinations

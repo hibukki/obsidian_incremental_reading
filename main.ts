@@ -16,18 +16,11 @@ import { ClaudeCopilotSettingTab } from "./src/components/SettingsTab";
 import { ClaudeCopilotSettings } from "./src/types";
 import { Settings, CopilotReactAPI } from "./src/types/copilotState";
 import { insertCursorMarker } from "./src/utils/cursor";
-import {
-	CLAUDE_COPILOT_FOLDER,
-	CLAUDE_COPILOT_PROMPT_FILE,
-} from "./src/consts";
 
 const DEFAULT_SETTINGS: ClaudeCopilotSettings = {
 	apiKey: "",
 	model: "claude-3-5-haiku-latest",
 	debounceDelay: 2000,
-	promptTemplate: `Please see what the user is writing, try inferring their intent, and suggest one short thing for them, which will be presented for them on a sidebar in Obsidian. Here is the current user document, with <cursor/> marking their current cursor, so you can see what specifically they are working on right now. Below is their open doc:
-
-{{doc}}`,
 };
 
 const VIEW_TYPE_CLAUDE_COPILOT = "claude-copilot-view";
@@ -65,7 +58,6 @@ class ClaudeCopilotView extends ItemView {
 			apiKey: this.plugin.settings.apiKey,
 			model: this.plugin.settings.model,
 			debounceDelayMs: this.plugin.settings.debounceDelay,
-			promptTemplate: await this.plugin.loadPromptTemplate(),
 		};
 
 		this.root.render(
@@ -75,6 +67,7 @@ class ClaudeCopilotView extends ItemView {
 					this.reactAPI = api;
 					this.plugin.onCopilotReady(api);
 				},
+				app: this.plugin.app,
 			}),
 		);
 	}
@@ -151,9 +144,6 @@ export default class ClaudeCopilotPlugin extends Plugin {
 				}),
 			);
 
-			await this.ensurePromptFile();
-			console.log("Claude Copilot: Prompt file ensured");
-
 			this.app.workspace.onLayoutReady(() => {
 				setTimeout(() => {
 					this.activateView();
@@ -208,44 +198,6 @@ export default class ClaudeCopilotPlugin extends Plugin {
 		this.reactAPI?.updateSettings({ model });
 	}
 
-	async loadPromptTemplate(): Promise<string> {
-		const promptPath = CLAUDE_COPILOT_PROMPT_FILE;
-		const promptFile = this.app.vault.getAbstractFileByPath(promptPath);
-
-		if (!(promptFile instanceof TFile)) {
-			throw new Error(`Prompt file not found: ${promptPath}`);
-		}
-
-		try {
-			const content = await this.app.vault.read(promptFile);
-			return content;
-		} catch (error) {
-			throw new Error(`Error reading prompt file: ${error}`);
-		}
-	}
-
-	async ensurePromptFile() {
-		try {
-			const folderPath = CLAUDE_COPILOT_FOLDER;
-			const promptPath = CLAUDE_COPILOT_PROMPT_FILE;
-
-			const folder = this.app.vault.getAbstractFileByPath(folderPath);
-			if (!folder) {
-				await this.app.vault.createFolder(folderPath);
-			}
-
-			const promptFile = this.app.vault.getAbstractFileByPath(promptPath);
-			if (!promptFile) {
-				await this.app.vault.create(
-					promptPath,
-					this.settings.promptTemplate,
-				);
-			}
-		} catch (error) {
-			console.error("Claude Copilot: Error ensuring prompt file:", error);
-		}
-	}
-
 	onunload() {
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE_CLAUDE_COPILOT);
 	}
@@ -266,7 +218,6 @@ export default class ClaudeCopilotPlugin extends Plugin {
 			apiKey: this.settings.apiKey,
 			model: this.settings.model,
 			debounceDelayMs: this.settings.debounceDelay,
-			promptTemplate: await this.loadPromptTemplate(),
 		});
 	}
 }
