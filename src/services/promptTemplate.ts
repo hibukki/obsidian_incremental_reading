@@ -1,9 +1,10 @@
 import { App, TFile } from "obsidian";
 import { CLAUDE_COPILOT_FOLDER, CLAUDE_COPILOT_PROMPT_FILE } from "../consts";
+import defaultPromptTemplate from "../templates/default_prompt.md";
 
-const DEFAULT_PROMPT_TEMPLATE = `Please see what the user is writing, try inferring their intent, and suggest one short thing for them, which will be presented for them on a sidebar in Obsidian. Here is the current user document, with <cursor/> marking their current cursor, so you can see what specifically they are working on right now. Below is their open doc:
-
-{{doc}}`;
+export function getDefaultPromptTemplate(): string {
+	return defaultPromptTemplate;
+}
 
 export async function getPromptTemplate(app: App): Promise<string> {
 	await ensurePromptFile(app);
@@ -23,6 +24,33 @@ export async function getPromptTemplate(app: App): Promise<string> {
 	}
 }
 
+export async function restoreDefaultPrompt(app: App): Promise<void> {
+	try {
+		await ensurePromptFile(app);
+		const promptPath = CLAUDE_COPILOT_PROMPT_FILE;
+		const defaultContent = getDefaultPromptTemplate();
+
+		// Overwrite the existing file with default content
+		await app.vault.adapter.write(promptPath, defaultContent);
+	} catch (error) {
+		console.error("Claude Copilot: Error restoring default prompt:", error);
+		throw error;
+	}
+}
+
+export async function openPromptFile(app: App): Promise<void> {
+	try {
+		await ensurePromptFile(app);
+		const promptPath = CLAUDE_COPILOT_PROMPT_FILE;
+
+		// Open the file in Obsidian
+		await app.workspace.openLinkText(promptPath, "", false);
+	} catch (error) {
+		console.error("Claude Copilot: Error opening prompt file:", error);
+		throw error;
+	}
+}
+
 async function ensurePromptFile(app: App): Promise<void> {
 	try {
 		const folderPath = CLAUDE_COPILOT_FOLDER;
@@ -35,7 +63,8 @@ async function ensurePromptFile(app: App): Promise<void> {
 
 		const promptFile = app.vault.getAbstractFileByPath(promptPath);
 		if (!promptFile) {
-			await app.vault.create(promptPath, DEFAULT_PROMPT_TEMPLATE);
+			const defaultContent = getDefaultPromptTemplate();
+			await app.vault.create(promptPath, defaultContent);
 		}
 	} catch (error) {
 		console.error("Claude Copilot: Error ensuring prompt file:", error);

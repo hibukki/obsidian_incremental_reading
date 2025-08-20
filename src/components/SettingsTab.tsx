@@ -3,6 +3,10 @@ import { App, PluginSettingTab } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
 import type ClaudeCopilotPlugin from "../../main";
 import { CLAUDE_COPILOT_PROMPT_FILE } from "../consts";
+import {
+	openPromptFile,
+	restoreDefaultPrompt,
+} from "../services/promptTemplate";
 
 const CLAUDE_MODELS = [
 	"claude-3-5-haiku-latest",
@@ -51,6 +55,22 @@ const SettingsComponent: React.FC<SettingsProps> = ({
 		if (!isNaN(delay) && delay > 0) {
 			plugin.settings.debounceDelay = delay;
 			await plugin.saveSettings();
+		}
+	};
+
+	const handleEditPrompt = async () => {
+		try {
+			await openPromptFile(plugin.app);
+		} catch (error) {
+			console.error("Error opening prompt file:", error);
+		}
+	};
+
+	const handleRestoreDefault = async () => {
+		try {
+			await restoreDefaultPrompt(plugin.app);
+		} catch (error) {
+			console.error("Error restoring default prompt:", error);
 		}
 	};
 
@@ -119,10 +139,24 @@ const SettingsComponent: React.FC<SettingsProps> = ({
 				</div>
 			</div>
 
-			<p className="setting-item-description">
-				To customize the prompt, create or edit the file:{" "}
-				{CLAUDE_COPILOT_PROMPT_FILE}
-			</p>
+			<div className="setting-item">
+				<div className="setting-item-info">
+					<div className="setting-item-name">Prompt Template</div>
+					<div className="setting-item-description">
+						Customize the prompt template that guides Claude's
+						responses. File location: {CLAUDE_COPILOT_PROMPT_FILE}
+					</div>
+				</div>
+				<div className="setting-item-control">
+					<button onClick={handleEditPrompt}>Edit Prompt</button>
+					<button
+						onClick={handleRestoreDefault}
+						style={{ marginLeft: "8px" }}
+					>
+						Restore Default
+					</button>
+				</div>
+			</div>
 		</div>
 	);
 };
