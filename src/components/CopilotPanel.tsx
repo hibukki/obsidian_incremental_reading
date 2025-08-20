@@ -54,33 +54,6 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
 	lastSuccessfulFeedback,
 	onRetry,
 }) => {
-	// Helper to get the most recent feedback for display
-	const getDisplayContent = () => {
-		if (queryState.status === 'success') {
-			return <XMLContentRenderer content={queryState.feedback} />;
-		}
-		if (queryState.status === 'error') {
-			return (
-				<ErrorDisplay 
-					error={queryState.error}
-					occurredAt={queryState.occurredAt}
-					canRetry={canRetryError(queryState.error)}
-					onRetry={onRetry}
-				/>
-			);
-		}
-		// For 'idle' and 'querying', show previous feedback or placeholder
-		if (queryState.status === 'querying' && lastSuccessfulFeedback) {
-			return <XMLContentRenderer content={lastSuccessfulFeedback} />;
-		}
-		
-		return (
-			<div className="placeholder-text">
-				Waiting for document changes...
-			</div>
-		);
-	};
-
 	return (
 		<div className="claude-feedback">
 			{/* Always render thinking indicator to maintain layout */}
@@ -93,8 +66,23 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
 				<div className="placeholder-text">Claude is thinking...</div>
 			</div>
 			
-			{/* Main content area */}
-			{getDisplayContent()}
+			{/* Main content area - show error, feedback, or waiting message */}
+			{queryState.status === 'error' ? (
+				<ErrorDisplay 
+					error={queryState.error}
+					occurredAt={queryState.occurredAt}
+					canRetry={canRetryError(queryState.error)}
+					onRetry={onRetry}
+				/>
+			) : (queryState.status === 'success' && queryState.feedback) ? (
+				<XMLContentRenderer content={queryState.feedback} />
+			) : lastSuccessfulFeedback ? (
+				<XMLContentRenderer content={lastSuccessfulFeedback} />
+			) : (
+				<div className="placeholder-text">
+					Waiting for document changes...
+				</div>
+			)}
 		</div>
 	);
 };
