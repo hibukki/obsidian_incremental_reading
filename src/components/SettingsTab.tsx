@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { App, PluginSettingTab } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
 import type ClaudeCopilotPlugin from "../../main";
@@ -35,6 +35,20 @@ const SettingsComponent: React.FC<SettingsProps> = ({
 	const [debounceDelay, setDebounceDelay] = useState(
 		plugin.settings.debounceDelay.toString(),
 	);
+	const [statusMessage, setStatusMessage] = useState<{
+		text: string;
+		type: "success" | "error";
+	} | null>(null);
+
+	// Auto-clear status messages after 3 seconds
+	useEffect(() => {
+		if (statusMessage) {
+			const timer = setTimeout(() => {
+				setStatusMessage(null);
+			}, 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [statusMessage]);
 
 	const handleApiKeyChange = async (value: string) => {
 		setApiKey(value);
@@ -61,16 +75,32 @@ const SettingsComponent: React.FC<SettingsProps> = ({
 	const handleEditPrompt = async () => {
 		try {
 			await openPromptFile(plugin.app);
+			setStatusMessage({
+				text: `Opened prompt file: ${CLAUDE_COPILOT_PROMPT_FILE}`,
+				type: "success",
+			});
 		} catch (error) {
 			console.error("Error opening prompt file:", error);
+			setStatusMessage({
+				text: "Failed to open prompt file",
+				type: "error",
+			});
 		}
 	};
 
 	const handleRestoreDefault = async () => {
 		try {
 			await restoreDefaultPrompt(plugin.app);
+			setStatusMessage({
+				text: "Prompt restored to default",
+				type: "success",
+			});
 		} catch (error) {
 			console.error("Error restoring default prompt:", error);
+			setStatusMessage({
+				text: "Failed to restore default prompt",
+				type: "error",
+			});
 		}
 	};
 
@@ -156,6 +186,27 @@ const SettingsComponent: React.FC<SettingsProps> = ({
 						Restore Default
 					</button>
 				</div>
+				{statusMessage && (
+					<div
+						style={{
+							marginTop: "8px",
+							padding: "6px 12px",
+							borderRadius: "4px",
+							fontSize: "14px",
+							backgroundColor:
+								statusMessage.type === "success"
+									? "#d4edda"
+									: "#f8d7da",
+							color:
+								statusMessage.type === "success"
+									? "#155724"
+									: "#721c24",
+							border: `1px solid ${statusMessage.type === "success" ? "#c3e6cb" : "#f5c6cb"}`,
+						}}
+					>
+						{statusMessage.text}
+					</div>
+				)}
 			</div>
 		</div>
 	);
