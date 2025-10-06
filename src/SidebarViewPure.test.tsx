@@ -23,6 +23,18 @@ describe("SidebarViewPure", () => {
 				status: "How was this note? (Use commands or click below)",
 				statusHappy: false,
 				showDifficultyButtons: true,
+				cardStats: {
+					stability: 3.5,
+					difficulty: 6.2,
+					reps: 4,
+					lapses: 1,
+				},
+				intervalPreviews: {
+					1: "10m",
+					2: "2h",
+					3: "1d",
+					4: "3d",
+				},
 				...mockHandlers,
 			};
 
@@ -38,6 +50,8 @@ describe("SidebarViewPure", () => {
 				status: "🎉 Done for today! All caught up!",
 				statusHappy: true,
 				showDifficultyButtons: false,
+				cardStats: null,
+				intervalPreviews: null,
 				...mockHandlers,
 			};
 
@@ -55,6 +69,8 @@ describe("SidebarViewPure", () => {
 				status: "",
 				statusHappy: false,
 				showDifficultyButtons: false,
+				cardStats: null,
+				intervalPreviews: null,
 				...mockHandlers,
 			};
 
@@ -70,6 +86,8 @@ describe("SidebarViewPure", () => {
 				status: "Scheduled for 2 hours",
 				statusHappy: false,
 				showDifficultyButtons: false,
+				cardStats: null,
+				intervalPreviews: null,
 				...mockHandlers,
 			};
 
