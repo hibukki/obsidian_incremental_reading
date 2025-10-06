@@ -275,9 +275,13 @@ export class QueueManager {
 		};
 
 		return {
+<<<<<<< HEAD
 			[Rating.Again]: formatInterval(
 				schedulingInfo[Rating.Again].card.due,
 			),
+=======
+			[Rating.Again]: formatInterval(schedulingInfo[Rating.Again].card.due),
+>>>>>>> ad1721d (feat: implement ts-fsrs advanced features)
 			[Rating.Hard]: formatInterval(schedulingInfo[Rating.Hard].card.due),
 			[Rating.Good]: formatInterval(schedulingInfo[Rating.Good].card.due),
 			[Rating.Easy]: formatInterval(schedulingInfo[Rating.Easy].card.due),

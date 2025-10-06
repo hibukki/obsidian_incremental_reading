@@ -198,18 +198,25 @@ export default class IncrementalReadingPlugin extends Plugin {
 		// Find the note entry to get its card
 		const noteEntry = dueNotes.find((n) => n.path === nextPath);
 
+<<<<<<< HEAD
 		if (!noteEntry) {
 			new Notice(`Error: Note ${nextPath} not found in due notes`);
 			this.updateStatus("Error loading note", false);
 			return;
 		}
 
+=======
+>>>>>>> ad1721d (feat: implement ts-fsrs advanced features)
 		// Open the note
 		const file = this.app.vault.getAbstractFileByPath(nextPath);
 		if (file instanceof TFile) {
 			await this.app.workspace.getLeaf(false).openFile(file);
 			this.currentNoteInReview = nextPath;
+<<<<<<< HEAD
 			this.currentNoteCard = noteEntry.fsrsCard;
+=======
+			this.currentNoteCard = noteEntry?.fsrsCard || null;
+>>>>>>> ad1721d (feat: implement ts-fsrs advanced features)
 
 			// Send card stats and interval previews to UI
 			if (this.currentNoteCard && this.onCardStatsChanged) {
