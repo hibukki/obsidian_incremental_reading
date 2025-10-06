@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { App } from "obsidian";
 import IncrementalReadingPlugin from "../main";
+import { Rating } from "ts-fsrs";
 
 interface SidebarViewProps {
 	app: App;
@@ -66,12 +67,20 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 		await plugin.addCurrentNoteToQueue();
 	};
 
-	const handleMarkEasy = () => {
-		plugin.markDifficulty("easy");
+	const handleMarkAgain = () => {
+		plugin.markRating(Rating.Again);
 	};
 
 	const handleMarkHard = () => {
-		plugin.markDifficulty("hard");
+		plugin.markRating(Rating.Hard);
+	};
+
+	const handleMarkGood = () => {
+		plugin.markRating(Rating.Good);
+	};
+
+	const handleMarkEasy = () => {
+		plugin.markRating(Rating.Easy);
 	};
 
 	return (
@@ -128,20 +137,27 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 				{showDifficultyButtons && (
 					<div
 						style={{
-							display: "flex",
-							gap: "10px",
+							display: "grid",
+							gridTemplateColumns: "1fr 1fr",
+							gap: "8px",
 							marginTop: "10px",
 						}}
 					>
-						<button
-							className="mod-cta"
-							style={{ flex: "1" }}
-							onClick={handleMarkEasy}
-						>
-							Easy
+						<button style={{ flex: "1" }} onClick={handleMarkAgain}>
+							Again
 						</button>
 						<button style={{ flex: "1" }} onClick={handleMarkHard}>
 							Hard
+						</button>
+						<button
+							className="mod-cta"
+							style={{ flex: "1" }}
+							onClick={handleMarkGood}
+						>
+							Good
+						</button>
+						<button style={{ flex: "1" }} onClick={handleMarkEasy}>
+							Easy
 						</button>
 					</div>
 				)}

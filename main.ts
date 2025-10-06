@@ -4,6 +4,7 @@ import { selectNextNote } from "./src/nextNoteSelector";
 import { Root, createRoot } from "react-dom/client";
 import { SidebarView } from "./src/SidebarView";
 import React from "react";
+import { Rating } from "ts-fsrs";
 
 const VIEW_TYPE_INCREMENTAL = "incremental-reading-view";
 
@@ -95,18 +96,34 @@ export default class IncrementalReadingPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: "mark-easy",
-			name: "Mark Current as Easy (double interval)",
+			id: "mark-again",
+			name: "Mark Current as Again",
 			callback: () => {
-				this.markDifficulty("easy");
+				this.markRating(Rating.Again);
 			},
 		});
 
 		this.addCommand({
 			id: "mark-hard",
-			name: "Mark Current as Hard (reset to 1 day)",
+			name: "Mark Current as Hard",
 			callback: () => {
-				this.markDifficulty("hard");
+				this.markRating(Rating.Hard);
+			},
+		});
+
+		this.addCommand({
+			id: "mark-good",
+			name: "Mark Current as Good",
+			callback: () => {
+				this.markRating(Rating.Good);
+			},
+		});
+
+		this.addCommand({
+			id: "mark-easy",
+			name: "Mark Current as Easy",
+			callback: () => {
+				this.markRating(Rating.Easy);
 			},
 		});
 
@@ -160,7 +177,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 		}
 	}
 
-	async markDifficulty(difficulty: "easy" | "hard") {
+	async markRating(rating: Rating) {
 		if (!this.currentNoteInReview) {
 			new Notice("No note currently in review");
 			return;
@@ -168,7 +185,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 
 		const nextDue = await this.queueManager.scheduleNext(
 			this.currentNoteInReview,
-			difficulty,
+			rating,
 		);
 
 		// Format the due date nicely

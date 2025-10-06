@@ -195,10 +195,7 @@ export class QueueManager {
 		await this.saveQueue(queue);
 	}
 
-	async scheduleNext(
-		path: string,
-		difficulty: "easy" | "hard",
-	): Promise<Date | null> {
+	async scheduleNext(path: string, rating: Rating): Promise<Date | null> {
 		const queue = await this.loadQueue();
 		const noteIndex = queue.notes.findIndex((n) => n.path === path);
 
@@ -208,11 +205,6 @@ export class QueueManager {
 		}
 
 		const note = queue.notes[noteIndex];
-
-		// Map our difficulty to FSRS ratings
-		// Hard → Again (forgot, need to review soon)
-		// Easy → Good (remembered well, standard progression)
-		const rating = difficulty === "hard" ? Rating.Again : Rating.Good;
 
 		// Use FSRS to schedule the next review
 		const now = new Date();
