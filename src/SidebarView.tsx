@@ -47,11 +47,18 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			updateCounters();
 		};
 
+		// Auto-refresh counters every 30 seconds
+		// (to catch notes that become due, like "Again" rated notes)
+		const refreshInterval = setInterval(() => {
+			updateCounters();
+		}, 30000); // 30 seconds
+
 		return () => {
 			plugin.onUpdateUI = undefined;
 			plugin.onShowDifficultyPrompt = undefined;
 			plugin.onHideDifficultyPrompt = undefined;
 			plugin.onCountersChanged = undefined;
+			clearInterval(refreshInterval);
 		};
 	}, [plugin]);
 
