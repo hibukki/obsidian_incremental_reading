@@ -91,17 +91,9 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 				<div>Total in queue: {totalCount}</div>
 			</div>
 
-			{/* Show Queue button */}
+			{/* Show Next button - primary only when there are notes to show */}
 			<button
-				style={{ marginBottom: "10px", width: "100%" }}
-				onClick={handleShowQueue}
-			>
-				Show Queue
-			</button>
-
-			{/* Show Next button */}
-			<button
-				className="mod-cta"
+				className={todayCount > 0 ? "mod-cta" : ""}
 				style={{ marginBottom: "10px", width: "100%" }}
 				onClick={handleShowNext}
 			>
@@ -149,6 +141,19 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 					</div>
 				)}
 			</div>
+
+			{/* Show Queue button - less prominent, at the bottom */}
+			<button
+				style={{
+					marginTop: "20px",
+					width: "100%",
+					fontSize: "0.9em",
+					opacity: "0.7",
+				}}
+				onClick={handleShowQueue}
+			>
+				Show Queue (debug)
+			</button>
 		</div>
 	);
 };

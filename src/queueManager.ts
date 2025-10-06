@@ -145,7 +145,7 @@ export class QueueManager {
 		};
 	}
 
-	async addToQueue(path: string, daysUntilDue: number = 1): Promise<void> {
+	async addToQueue(path: string, daysUntilDue: number = 0): Promise<void> {
 		const queue = await this.loadQueue();
 
 		// Check if already in queue
