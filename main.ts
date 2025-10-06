@@ -132,9 +132,9 @@ export default class IncrementalReadingPlugin extends Plugin {
 	}
 
 	async showNextNote() {
-		// Load queue and select next note
-		const queue = await this.queueManager.loadQueue();
-		const nextPath = selectNextNote(queue);
+		// Load due notes (no cache - we need accurate data for decision-making)
+		const dueNotes = await this.queueManager.getDueNotes(false);
+		const nextPath = selectNextNote(dueNotes);
 
 		if (!nextPath) {
 			this.updateStatus("🎉 Done for today! All caught up!", true);

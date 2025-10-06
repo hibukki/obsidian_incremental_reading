@@ -16,25 +16,10 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 		useState<boolean>(false);
 
 	const updateCounters = async () => {
-		const queue = await plugin.queueManager.loadQueue();
-		const now = new Date();
-		const todayEnd = new Date(
-			now.getFullYear(),
-			now.getMonth(),
-			now.getDate(),
-			23,
-			59,
-			59,
-			999,
-		);
-
-		const dueToday = queue.notes.filter((note) => {
-			const dueDate = new Date(note.dueDate);
-			return dueDate <= todayEnd;
-		}).length;
-
-		setTodayCount(dueToday);
-		setTotalCount(queue.notes.length);
+		// Use cache for UI display - it's okay if it's slightly stale
+		const stats = await plugin.queueManager.getQueueStats(true);
+		setTodayCount(stats.dueToday);
+		setTotalCount(stats.total);
 	};
 
 	useEffect(() => {
