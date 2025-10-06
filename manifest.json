@@ -1,9 +1,9 @@
 {
-	"id": "plugin-template",
-	"name": "Plugin Template",
+	"id": "incremental-reading",
+	"name": "Incremental Reading",
 	"version": "0.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "A template for building Obsidian plugins",
+	"description": "Spaced repetition for reading notes - shows you notes you haven't seen in a while",
 	"author": "",
 	"authorUrl": "",
 	"isDesktopOnly": false

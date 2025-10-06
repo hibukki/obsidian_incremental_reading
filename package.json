@@ -1,18 +1,23 @@
 {
-	"name": "obsidian-plugin-template",
+	"name": "obsidian-incremental-reading",
 	"version": "0.1.0",
-	"description": "A template for building Obsidian plugins with React and TypeScript",
+	"description": "Spaced repetition for reading notes in Obsidian",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
-		"dev:link": "ln -s \"$PWD\" \"$npm_config_vault/.obsidian/plugins/plugin-template\"",
+		"dev:link": "ln -s \"$PWD\" \"$npm_config_vault/.obsidian/plugins/incremental-reading\"",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"lint": "eslint src/**/*.ts",
 		"format": "prettier --write .",
+		"test": "npx tsx src/nextNoteSelector.test.ts",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"prepare": "husky"
 	},
-	"keywords": ["obsidian", "obsidian-plugin", "template"],
+	"keywords": [
+		"obsidian",
+		"obsidian-plugin",
+		"template"
+	],
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
