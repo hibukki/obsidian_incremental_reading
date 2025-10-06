@@ -1,6 +1,9 @@
 import { ItemView, WorkspaceLeaf, Plugin, TFile, Notice } from "obsidian";
 import { QueueManager } from "./src/queueManager";
 import { selectNextNote } from "./src/nextNoteSelector";
+import { Root, createRoot } from "react-dom/client";
+import { SidebarView } from "./src/SidebarView";
+import React from "react";
 
 const VIEW_TYPE_INCREMENTAL = "incremental-reading-view";
 
@@ -12,8 +15,7 @@ const DEFAULT_SETTINGS: IncrementalReadingSettings = {};
 
 class IncrementalReadingView extends ItemView {
 	plugin: IncrementalReadingPlugin;
-	todayCountEl: HTMLElement | null = null;
-	totalCountEl: HTMLElement | null = null;
+	root: Root | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: IncrementalReadingPlugin) {
 		super(leaf);
@@ -36,113 +38,32 @@ class IncrementalReadingView extends ItemView {
 		const container = this.containerEl.children[1] as HTMLElement;
 		container.empty();
 
-		container.createEl("h4", { text: "Incremental Reading" });
-
-		// Queue stats
-		const statsContainer = container.createDiv();
-		statsContainer.style.marginBottom = "15px";
-		statsContainer.style.padding = "10px";
-		statsContainer.style.backgroundColor = "var(--background-secondary)";
-		statsContainer.style.borderRadius = "5px";
-
-		this.todayCountEl = statsContainer.createEl("div", {
-			text: "Due today: ...",
-		});
-		this.todayCountEl.style.marginBottom = "5px";
-
-		this.totalCountEl = statsContainer.createEl("div", {
-			text: "Total in queue: ...",
-		});
-
-		// Show Queue button
-		const queueButton = container.createEl("button", {
-			text: "Show Queue",
-		});
-		queueButton.style.marginBottom = "10px";
-		queueButton.style.width = "100%";
-
-		queueButton.addEventListener("click", async () => {
-			await this.plugin.openQueueFile();
-		});
-
-		// Show Next button
-		const nextButton = container.createEl("button", {
-			text: "Show Next",
-			cls: "mod-cta",
-		});
-		nextButton.style.marginBottom = "10px";
-		nextButton.style.width = "100%";
-
-		nextButton.addEventListener("click", async () => {
-			await this.plugin.showNextNote();
-		});
-
-		// Add to Queue button
-		const addButton = container.createEl("button", {
-			text: "Add Current Note to Queue",
-		});
-		addButton.style.marginBottom = "10px";
-		addButton.style.width = "100%";
-
-		addButton.addEventListener("click", async () => {
-			await this.plugin.addCurrentNoteToQueue();
-		});
-
-		// Status message area
-		const statusEl = container.createEl("div", {
-			cls: "incremental-reading-status",
-		});
-		statusEl.style.marginTop = "20px";
-		statusEl.style.padding = "10px";
-		statusEl.style.textAlign = "center";
-
-		this.plugin.setStatusElement(statusEl);
-		this.plugin.setView(this);
-
-		// Initial update of counters
-		await this.updateCounters();
-	}
-
-	async updateCounters() {
-		const queue = await this.plugin.queueManager.loadQueue();
-		const now = new Date();
-		const todayEnd = new Date(
-			now.getFullYear(),
-			now.getMonth(),
-			now.getDate(),
-			23,
-			59,
-			59,
-			999,
+		this.root = createRoot(container);
+		this.root.render(
+			React.createElement(SidebarView, {
+				app: this.app,
+				plugin: this.plugin,
+			}),
 		);
-
-		const dueToday = queue.notes.filter((note) => {
-			const dueDate = new Date(note.dueDate);
-			return dueDate <= todayEnd;
-		}).length;
-
-		const total = queue.notes.length;
-
-		if (this.todayCountEl) {
-			this.todayCountEl.setText(`Due today: ${dueToday}`);
-		}
-
-		if (this.totalCountEl) {
-			this.totalCountEl.setText(`Total in queue: ${total}`);
-		}
 	}
 
 	async onClose() {
-		// Cleanup if needed
+		if (this.root) {
+			this.root.unmount();
+		}
 	}
 }
 
 export default class IncrementalReadingPlugin extends Plugin {
 	settings: IncrementalReadingSettings;
 	queueManager: QueueManager;
-	statusElement: HTMLElement | null = null;
 	currentNoteInReview: string | null = null;
-	view: IncrementalReadingView | null = null;
+
+	// Callbacks for React to hook into
+	onUpdateUI?: (message: string, isHappy: boolean) => void;
+	onShowDifficultyPrompt?: () => void;
+	onHideDifficultyPrompt?: () => void;
+	onCountersChanged?: () => void;
 
 	async onload() {
 		await this.loadSettings();
@@ -195,14 +116,6 @@ export default class IncrementalReadingPlugin extends Plugin {
 		});
 	}
 
-	setStatusElement(element: HTMLElement) {
-		this.statusElement = element;
-	}
-
-	setView(view: IncrementalReadingView) {
-		this.view = view;
-	}
-
 	async openQueueFile() {
 		const file = this.app.vault.getAbstractFileByPath("queue.md");
 		if (file instanceof TFile) {
@@ -213,11 +126,8 @@ export default class IncrementalReadingPlugin extends Plugin {
 	}
 
 	updateStatus(message: string, isHappy: boolean = false) {
-		if (this.statusElement) {
-			this.statusElement.setText(message);
-			this.statusElement.style.color = isHappy
-				? "var(--text-success)"
-				: "var(--text-normal)";
+		if (this.onUpdateUI) {
+			this.onUpdateUI(message, isHappy);
 		}
 	}
 
@@ -230,6 +140,9 @@ export default class IncrementalReadingPlugin extends Plugin {
 			this.updateStatus("🎉 Done for today! All caught up!", true);
 			new Notice("🎉 Done for today!");
 			this.currentNoteInReview = null;
+			if (this.onHideDifficultyPrompt) {
+				this.onHideDifficultyPrompt();
+			}
 			return;
 		}
 
@@ -238,41 +151,12 @@ export default class IncrementalReadingPlugin extends Plugin {
 		if (file instanceof TFile) {
 			await this.app.workspace.getLeaf(false).openFile(file);
 			this.currentNoteInReview = nextPath;
-			this.showDifficultyPrompt(nextPath);
+			if (this.onShowDifficultyPrompt) {
+				this.onShowDifficultyPrompt();
+			}
 		} else {
 			new Notice(`Could not open note: ${nextPath}`);
 			this.currentNoteInReview = null;
-		}
-	}
-
-	showDifficultyPrompt(path: string) {
-		this.updateStatus("How was this note? (Use commands or click below)");
-
-		if (this.statusElement) {
-			// Clear previous buttons
-			this.statusElement.empty();
-
-			const buttonContainer = this.statusElement.createDiv();
-			buttonContainer.style.display = "flex";
-			buttonContainer.style.gap = "10px";
-			buttonContainer.style.marginTop = "10px";
-
-			const easyButton = buttonContainer.createEl("button", {
-				text: "Easy",
-				cls: "mod-cta",
-			});
-			easyButton.style.flex = "1";
-			easyButton.addEventListener("click", () => {
-				this.markDifficulty("easy");
-			});
-
-			const hardButton = buttonContainer.createEl("button", {
-				text: "Hard",
-			});
-			hardButton.style.flex = "1";
-			hardButton.addEventListener("click", () => {
-				this.markDifficulty("hard");
-			});
 		}
 	}
 
@@ -296,9 +180,14 @@ export default class IncrementalReadingPlugin extends Plugin {
 
 		this.currentNoteInReview = null;
 
+		// Hide difficulty buttons
+		if (this.onHideDifficultyPrompt) {
+			this.onHideDifficultyPrompt();
+		}
+
 		// Update counters
-		if (this.view) {
-			await this.view.updateCounters();
+		if (this.onCountersChanged) {
+			this.onCountersChanged();
 		}
 
 		// Auto-show next note
@@ -316,8 +205,8 @@ export default class IncrementalReadingPlugin extends Plugin {
 		new Notice(`Added "${activeFile.basename}" to queue (due tomorrow)`);
 
 		// Update counters
-		if (this.view) {
-			await this.view.updateCounters();
+		if (this.onCountersChanged) {
+			this.onCountersChanged();
 		}
 	}
 
