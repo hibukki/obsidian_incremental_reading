@@ -12,6 +12,8 @@ const DEFAULT_SETTINGS: IncrementalReadingSettings = {};
 
 class IncrementalReadingView extends ItemView {
 	plugin: IncrementalReadingPlugin;
+	todayCountEl: HTMLElement | null = null;
+	totalCountEl: HTMLElement | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: IncrementalReadingPlugin) {
 		super(leaf);
@@ -35,6 +37,33 @@ class IncrementalReadingView extends ItemView {
 		container.empty();
 
 		container.createEl("h4", { text: "Incremental Reading" });
+
+		// Queue stats
+		const statsContainer = container.createDiv();
+		statsContainer.style.marginBottom = "15px";
+		statsContainer.style.padding = "10px";
+		statsContainer.style.backgroundColor = "var(--background-secondary)";
+		statsContainer.style.borderRadius = "5px";
+
+		this.todayCountEl = statsContainer.createEl("div", {
+			text: "Due today: ...",
+		});
+		this.todayCountEl.style.marginBottom = "5px";
+
+		this.totalCountEl = statsContainer.createEl("div", {
+			text: "Total in queue: ...",
+		});
+
+		// Show Queue button
+		const queueButton = container.createEl("button", {
+			text: "Show Queue",
+		});
+		queueButton.style.marginBottom = "10px";
+		queueButton.style.width = "100%";
+
+		queueButton.addEventListener("click", async () => {
+			await this.plugin.openQueueFile();
+		});
 
 		// Show Next button
 		const nextButton = container.createEl("button", {
@@ -68,6 +97,39 @@ class IncrementalReadingView extends ItemView {
 		statusEl.style.textAlign = "center";
 
 		this.plugin.setStatusElement(statusEl);
+		this.plugin.setView(this);
+
+		// Initial update of counters
+		await this.updateCounters();
+	}
+
+	async updateCounters() {
+		const queue = await this.plugin.queueManager.loadQueue();
+		const now = new Date();
+		const todayEnd = new Date(
+			now.getFullYear(),
+			now.getMonth(),
+			now.getDate(),
+			23,
+			59,
+			59,
+			999,
+		);
+
+		const dueToday = queue.notes.filter((note) => {
+			const dueDate = new Date(note.dueDate);
+			return dueDate <= todayEnd;
+		}).length;
+
+		const total = queue.notes.length;
+
+		if (this.todayCountEl) {
+			this.todayCountEl.setText(`Due today: ${dueToday}`);
+		}
+
+		if (this.totalCountEl) {
+			this.totalCountEl.setText(`Total in queue: ${total}`);
+		}
 	}
 
 	async onClose() {
@@ -80,6 +142,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 	queueManager: QueueManager;
 	statusElement: HTMLElement | null = null;
 	currentNoteInReview: string | null = null;
+	view: IncrementalReadingView | null = null;
 
 	async onload() {
 		await this.loadSettings();
@@ -134,6 +197,19 @@ export default class IncrementalReadingPlugin extends Plugin {
 
 	setStatusElement(element: HTMLElement) {
 		this.statusElement = element;
+	}
+
+	setView(view: IncrementalReadingView) {
+		this.view = view;
+	}
+
+	async openQueueFile() {
+		const file = this.app.vault.getAbstractFileByPath("queue.md");
+		if (file instanceof TFile) {
+			await this.app.workspace.getLeaf(false).openFile(file);
+		} else {
+			new Notice("Queue file not found");
+		}
 	}
 
 	updateStatus(message: string, isHappy: boolean = false) {
@@ -220,6 +296,11 @@ export default class IncrementalReadingPlugin extends Plugin {
 
 		this.currentNoteInReview = null;
 
+		// Update counters
+		if (this.view) {
+			await this.view.updateCounters();
+		}
+
 		// Auto-show next note
 		setTimeout(() => this.showNextNote(), 500);
 	}
@@ -233,6 +314,11 @@ export default class IncrementalReadingPlugin extends Plugin {
 
 		await this.queueManager.addToQueue(activeFile.path, 1);
 		new Notice(`Added "${activeFile.basename}" to queue (due tomorrow)`);
+
+		// Update counters
+		if (this.view) {
+			await this.view.updateCounters();
+		}
 	}
 
 	async activateView() {
