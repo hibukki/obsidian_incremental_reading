@@ -16,6 +16,8 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const [statusHappy, setStatusHappy] = useState<boolean>(false);
 	const [showDifficultyButtons, setShowDifficultyButtons] =
 		useState<boolean>(false);
+	const [cardStats, setCardStats] = useState<any>(null);
+	const [intervalPreviews, setIntervalPreviews] = useState<any>(null);
 
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
@@ -41,10 +43,17 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 
 		plugin.onHideDifficultyPrompt = () => {
 			setShowDifficultyButtons(false);
+			setCardStats(null);
+			setIntervalPreviews(null);
 		};
 
 		plugin.onCountersChanged = () => {
 			updateCounters();
+		};
+
+		plugin.onCardStatsChanged = (stats: any, intervals: any) => {
+			setCardStats(stats);
+			setIntervalPreviews(intervals);
 		};
 
 		// Auto-refresh counters every 30 seconds
@@ -58,6 +67,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			plugin.onShowDifficultyPrompt = undefined;
 			plugin.onHideDifficultyPrompt = undefined;
 			plugin.onCountersChanged = undefined;
+			plugin.onCardStatsChanged = undefined;
 			clearInterval(refreshInterval);
 		};
 	}, [plugin]);
@@ -129,6 +139,31 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 				Add Current Note to Queue
 			</button>
 
+			{/* Card Statistics (when reviewing) */}
+			{cardStats && (
+				<div
+					style={{
+						marginTop: "15px",
+						padding: "10px",
+						backgroundColor: "var(--background-secondary)",
+						borderRadius: "5px",
+						fontSize: "0.9em",
+					}}
+				>
+					<div style={{ marginBottom: "3px" }}>
+						<strong>Card Stats:</strong>
+					</div>
+					<div style={{ marginBottom: "2px" }}>
+						Memory: {cardStats.stability}d | Difficulty:{" "}
+						{cardStats.difficulty}/10
+					</div>
+					<div style={{ fontSize: "0.85em", opacity: 0.8 }}>
+						Reviews: {cardStats.reps} | Forgotten:{" "}
+						{cardStats.lapses}
+					</div>
+				</div>
+			)}
+
 			{/* Status message area */}
 			<div
 				style={{
@@ -141,6 +176,18 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 				}}
 			>
 				{status}
+				{showDifficultyButtons && intervalPreviews && (
+					<div
+						style={{
+							marginTop: "10px",
+							marginBottom: "5px",
+							fontSize: "0.85em",
+							opacity: 0.7,
+						}}
+					>
+						Next review intervals:
+					</div>
+				)}
 				{showDifficultyButtons && (
 					<div
 						style={{
@@ -152,9 +199,19 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 					>
 						<button style={{ flex: "1" }} onClick={handleMarkAgain}>
 							Again
+							{intervalPreviews && (
+								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+									{intervalPreviews[1]}
+								</div>
+							)}
 						</button>
 						<button style={{ flex: "1" }} onClick={handleMarkHard}>
 							Hard
+							{intervalPreviews && (
+								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+									{intervalPreviews[2]}
+								</div>
+							)}
 						</button>
 						<button
 							className="mod-cta"
@@ -162,9 +219,19 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 							onClick={handleMarkGood}
 						>
 							Good
+							{intervalPreviews && (
+								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+									{intervalPreviews[3]}
+								</div>
+							)}
 						</button>
 						<button style={{ flex: "1" }} onClick={handleMarkEasy}>
 							Easy
+							{intervalPreviews && (
+								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+									{intervalPreviews[4]}
+								</div>
+							)}
 						</button>
 					</div>
 				)}
