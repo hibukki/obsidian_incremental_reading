@@ -105,13 +105,38 @@ export class QueueManager {
 	}
 
 	/**
-	 * Get notes that are due today or earlier.
+	 * Get notes that are due now or earlier.
 	 * @param allowCache If true, may return cached data (for UI display).
 	 *                   If false, always loads fresh data (for decision-making).
 	 */
 	async getDueNotes(allowCache: boolean = false): Promise<NoteEntry[]> {
 		const queue = await this.loadQueue(allowCache);
 		const now = new Date();
+
+		return queue.notes.filter((note) => {
+			const dueDate = new Date(note.fsrsCard.due);
+			return dueDate <= now;
+		});
+	}
+
+	/**
+	 * Get notes that are due today (anytime today, even if not yet due).
+	 * Used for UI counter display.
+	 */
+	async getNotesScheduledToday(
+		allowCache: boolean = false,
+	): Promise<NoteEntry[]> {
+		const queue = await this.loadQueue(allowCache);
+		const now = new Date();
+		const todayStart = new Date(
+			now.getFullYear(),
+			now.getMonth(),
+			now.getDate(),
+			0,
+			0,
+			0,
+			0,
+		);
 		const todayEnd = new Date(
 			now.getFullYear(),
 			now.getMonth(),
@@ -124,7 +149,7 @@ export class QueueManager {
 
 		return queue.notes.filter((note) => {
 			const dueDate = new Date(note.fsrsCard.due);
-			return dueDate <= todayEnd;
+			return dueDate >= todayStart && dueDate <= todayEnd;
 		});
 	}
 
@@ -135,12 +160,14 @@ export class QueueManager {
 	 */
 	async getQueueStats(
 		allowCache: boolean = false,
-	): Promise<{ dueToday: number; total: number }> {
+	): Promise<{ dueNow: number; dueToday: number; total: number }> {
 		const queue = await this.loadQueue(allowCache);
-		const dueNotes = await this.getDueNotes(allowCache);
+		const dueNow = await this.getDueNotes(allowCache);
+		const scheduledToday = await this.getNotesScheduledToday(allowCache);
 
 		return {
-			dueToday: dueNotes.length,
+			dueNow: dueNow.length,
+			dueToday: scheduledToday.length,
 			total: queue.notes.length,
 		};
 	}
@@ -171,13 +198,13 @@ export class QueueManager {
 	async scheduleNext(
 		path: string,
 		difficulty: "easy" | "hard",
-	): Promise<void> {
+	): Promise<Date | null> {
 		const queue = await this.loadQueue();
 		const noteIndex = queue.notes.findIndex((n) => n.path === path);
 
 		if (noteIndex < 0) {
 			// Note not in queue, shouldn't happen
-			return;
+			return null;
 		}
 
 		const note = queue.notes[noteIndex];
@@ -195,5 +222,8 @@ export class QueueManager {
 		note.fsrsCard = schedulingInfo[rating].card;
 
 		await this.saveQueue(queue);
+
+		// Return the new due date
+		return new Date(note.fsrsCard.due);
 	}
 }

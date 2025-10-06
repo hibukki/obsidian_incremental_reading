@@ -166,15 +166,29 @@ export default class IncrementalReadingPlugin extends Plugin {
 			return;
 		}
 
-		await this.queueManager.scheduleNext(
+		const nextDue = await this.queueManager.scheduleNext(
 			this.currentNoteInReview,
 			difficulty,
 		);
 
-		const message =
-			difficulty === "easy"
-				? "Scheduled for later (doubled interval)"
-				: "Scheduled for tomorrow";
+		// Format the due date nicely
+		let message = "Scheduled";
+		if (nextDue) {
+			const now = new Date();
+			const diffMs = nextDue.getTime() - now.getTime();
+			const diffMins = Math.round(diffMs / (1000 * 60));
+			const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+			const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+			if (diffMins < 60) {
+				message = `Scheduled for ${diffMins} min${diffMins !== 1 ? "s" : ""}`;
+			} else if (diffHours < 24) {
+				message = `Scheduled for ${diffHours} hour${diffHours !== 1 ? "s" : ""}`;
+			} else {
+				message = `Scheduled for ${diffDays} day${diffDays !== 1 ? "s" : ""}`;
+			}
+		}
+
 		new Notice(message);
 		this.updateStatus(message);
 

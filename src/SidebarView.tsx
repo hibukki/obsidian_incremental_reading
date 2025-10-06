@@ -8,7 +8,8 @@ interface SidebarViewProps {
 }
 
 export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
-	const [todayCount, setTodayCount] = useState<number>(0);
+	const [dueNowCount, setDueNowCount] = useState<number>(0);
+	const [dueTodayCount, setDueTodayCount] = useState<number>(0);
 	const [totalCount, setTotalCount] = useState<number>(0);
 	const [status, setStatus] = useState<string>("");
 	const [statusHappy, setStatusHappy] = useState<boolean>(false);
@@ -18,7 +19,8 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
 		const stats = await plugin.queueManager.getQueueStats(true);
-		setTodayCount(stats.dueToday);
+		setDueNowCount(stats.dueNow);
+		setDueTodayCount(stats.dueToday);
 		setTotalCount(stats.total);
 	};
 
@@ -86,14 +88,17 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 				}}
 			>
 				<div style={{ marginBottom: "5px" }}>
-					Due today: {todayCount}
+					Due now: {dueNowCount}
+				</div>
+				<div style={{ marginBottom: "5px" }}>
+					Due today: {dueTodayCount}
 				</div>
 				<div>Total in queue: {totalCount}</div>
 			</div>
 
 			{/* Show Next button - primary only when there are notes to show */}
 			<button
-				className={todayCount > 0 ? "mod-cta" : ""}
+				className={dueNowCount > 0 ? "mod-cta" : ""}
 				style={{ marginBottom: "10px", width: "100%" }}
 				onClick={handleShowNext}
 			>
