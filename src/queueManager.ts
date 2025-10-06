@@ -1,18 +1,30 @@
 import { App, TFile } from "obsidian";
-import { QueueData, NoteEntry, LegacyNoteEntry } from "./types";
+import {
+	QueueData,
+	NoteEntry,
+	LegacyNoteEntry,
+	CardStats,
+	IntervalPreviews,
+} from "./types";
 import { fsrs, createEmptyCard, Rating, Card } from "ts-fsrs";
 
 const QUEUE_FILE_PATH = "queue.md";
 
 export class QueueManager {
 	private cachedQueue: QueueData | null = null;
-	private cacheTimestamp: number = 0;
+	private cacheTimestamp = 0;
 	private readonly CACHE_TTL_MS = 1000; // 1 second cache
-	private fsrs = fsrs(); // FSRS instance
+	// FSRS instance with parameters optimized for incremental reading
+	private fsrs = fsrs({
+		request_retention: 0.85, // Lower retention for reading comprehension vs rote memorization
+		maximum_interval: 365, // Max 1 year - reading material can become outdated
+		enable_fuzz: true, // Distribute reviews more evenly across days
+		enable_short_term: true, // Better for initial learning phase
+	});
 
 	constructor(private app: App) {}
 
-	async loadQueue(allowCache: boolean = false): Promise<QueueData> {
+	async loadQueue(allowCache = false): Promise<QueueData> {
 		// Check if we can use cache
 		if (allowCache && this.cachedQueue) {
 			const now = Date.now();
@@ -41,8 +53,9 @@ export class QueueManager {
 			}
 
 			// Check if we need to migrate from legacy format
-			const notes = parsed.notes.map((note: any) =>
-				this.migrateNoteIfNeeded(note),
+			const notes = parsed.notes.map(
+				(note: NoteEntry | LegacyNoteEntry) =>
+					this.migrateNoteIfNeeded(note),
 			);
 
 			const queue = { notes };
@@ -59,23 +72,20 @@ export class QueueManager {
 	/**
 	 * Migrate legacy note format to FSRS format if needed.
 	 */
-	private migrateNoteIfNeeded(note: any): NoteEntry {
+	private migrateNoteIfNeeded(note: NoteEntry | LegacyNoteEntry): NoteEntry {
 		// Check if it's already in new format (has fsrsCard)
-		if (note.fsrsCard) {
-			return note as NoteEntry;
+		if ("fsrsCard" in note) {
+			return note;
 		}
 
 		// Legacy format - convert to FSRS
-		const legacyNote = note as LegacyNoteEntry;
-		console.log(
-			`Migrating note ${legacyNote.path} from legacy format to FSRS`,
-		);
+		console.log(`Migrating note ${note.path} from legacy format to FSRS`);
 
 		// Create a new FSRS card
-		const card = createEmptyCard(new Date(legacyNote.dueDate));
+		const card = createEmptyCard(new Date(note.dueDate));
 
 		return {
-			path: legacyNote.path,
+			path: note.path,
 			fsrsCard: card,
 		};
 	}
@@ -109,7 +119,7 @@ export class QueueManager {
 	 * @param allowCache If true, may return cached data (for UI display).
 	 *                   If false, always loads fresh data (for decision-making).
 	 */
-	async getDueNotes(allowCache: boolean = false): Promise<NoteEntry[]> {
+	async getDueNotes(allowCache = false): Promise<NoteEntry[]> {
 		const queue = await this.loadQueue(allowCache);
 		const now = new Date();
 
@@ -125,7 +135,7 @@ export class QueueManager {
 	 *                   If false, always loads fresh data (for accuracy).
 	 */
 	async getQueueStats(
-		allowCache: boolean = false,
+		allowCache = false,
 	): Promise<{ due: number; total: number }> {
 		const queue = await this.loadQueue(allowCache);
 		const due = await this.getDueNotes(allowCache);
@@ -136,7 +146,7 @@ export class QueueManager {
 		};
 	}
 
-	async addToQueue(path: string, daysUntilDue: number = 0): Promise<void> {
+	async addToQueue(path: string, daysUntilDue = 0): Promise<void> {
 		const queue = await this.loadQueue();
 
 		// Check if already in queue
@@ -174,6 +184,13 @@ export class QueueManager {
 		const now = new Date();
 		const schedulingInfo = this.fsrs.repeat(note.fsrsCard, now);
 
+		// Store the review log before updating the card
+		const reviewLog = schedulingInfo[rating].log;
+		if (!note.reviewLogs) {
+			note.reviewLogs = [];
+		}
+		note.reviewLogs.push(reviewLog);
+
 		// Update the card with the new scheduling info
 		note.fsrsCard = schedulingInfo[rating].card;
 
@@ -181,5 +198,79 @@ export class QueueManager {
 
 		// Return the new due date
 		return new Date(note.fsrsCard.due);
+	}
+
+	/**
+	 * Get statistics for a specific note's card.
+	 */
+	getCardStats(card: Card): CardStats {
+		return {
+			stability: Math.round(card.stability * 10) / 10, // Round to 1 decimal
+			difficulty: Math.round(card.difficulty * 10) / 10,
+			reps: card.reps,
+			lapses: card.lapses,
+			state: card.state,
+		};
+	}
+
+	/**
+	 * Preview what the next intervals would be for each rating.
+	 * Returns intervals in a human-readable format.
+	 */
+	previewIntervals(card: Card): IntervalPreviews {
+		const now = new Date();
+		const schedulingInfo = this.fsrs.repeat(card, now);
+
+		const formatInterval = (dueDate: Date): string => {
+			const diffMs = dueDate.getTime() - now.getTime();
+			const diffMins = Math.round(diffMs / (1000 * 60));
+			const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+			const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+			if (diffMins < 1) {
+				return "now";
+			} else if (diffMins < 60) {
+				return `${diffMins}m`;
+			} else if (diffHours < 24) {
+				return `${diffHours}h`;
+			} else if (diffDays === 1) {
+				return "1d";
+			} else {
+				return `${diffDays}d`;
+			}
+		};
+
+		return {
+			[Rating.Again]: formatInterval(
+				schedulingInfo[Rating.Again].card.due,
+			),
+			[Rating.Hard]: formatInterval(schedulingInfo[Rating.Hard].card.due),
+			[Rating.Good]: formatInterval(schedulingInfo[Rating.Good].card.due),
+			[Rating.Easy]: formatInterval(schedulingInfo[Rating.Easy].card.due),
+		};
+	}
+
+	/**
+	 * Reset a card back to "new" state (useful when note content changes significantly).
+	 */
+	async forgetCard(path: string): Promise<boolean> {
+		const queue = await this.loadQueue();
+		const noteIndex = queue.notes.findIndex((n) => n.path === path);
+
+		if (noteIndex < 0) {
+			return false;
+		}
+
+		const note = queue.notes[noteIndex];
+
+		// Create a new empty card (resets all progress)
+		note.fsrsCard = createEmptyCard(new Date());
+
+		// Clear review logs (or keep them for analytics - user preference)
+		// For now, we'll keep the logs for history
+		// note.reviewLogs = [];
+
+		await this.saveQueue(queue);
+		return true;
 	}
 }

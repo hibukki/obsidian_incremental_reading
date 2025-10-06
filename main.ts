@@ -4,7 +4,8 @@ import { selectNextNote } from "./src/nextNoteSelector";
 import { Root, createRoot } from "react-dom/client";
 import { SidebarView } from "./src/SidebarView";
 import React from "react";
-import { Rating } from "ts-fsrs";
+import { Rating, Card } from "ts-fsrs";
+import { CardStats, IntervalPreviews } from "./src/types";
 
 const VIEW_TYPE_INCREMENTAL = "incremental-reading-view";
 
@@ -59,12 +60,14 @@ export default class IncrementalReadingPlugin extends Plugin {
 	settings: IncrementalReadingSettings;
 	queueManager: QueueManager;
 	currentNoteInReview: string | null = null;
+	currentNoteCard: Card | null = null; // Store current card for stats/preview
 
 	// Callbacks for React to hook into
 	onUpdateUI?: (message: string, isHappy: boolean) => void;
 	onShowDifficultyPrompt?: () => void;
 	onHideDifficultyPrompt?: () => void;
 	onCountersChanged?: () => void;
+	onCardStatsChanged?: (stats: CardStats, intervals: IntervalPreviews) => void;
 
 	async onload() {
 		await this.loadSettings();
@@ -127,6 +130,34 @@ export default class IncrementalReadingPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: "forget-current-note",
+			name: "Reset Current Note (Forget Progress)",
+			callback: async () => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (!activeFile) {
+					new Notice("No active note");
+					return;
+				}
+
+				const success = await this.queueManager.forgetCard(
+					activeFile.path,
+				);
+				if (success) {
+					new Notice(
+						`Reset "${activeFile.basename}" to new card (progress cleared)`,
+					);
+					if (this.onCountersChanged) {
+						this.onCountersChanged();
+					}
+				} else {
+					new Notice(
+						`"${activeFile.basename}" is not in the queue`,
+					);
+				}
+			},
+		});
+
 		// Optionally activate view on startup
 		this.app.workspace.onLayoutReady(() => {
 			this.activateView();
@@ -157,9 +188,19 @@ export default class IncrementalReadingPlugin extends Plugin {
 			this.updateStatus("🎉 Done for today! All caught up!", true);
 			new Notice("🎉 Done for today!");
 			this.currentNoteInReview = null;
+			this.currentNoteCard = null;
 			if (this.onHideDifficultyPrompt) {
 				this.onHideDifficultyPrompt();
 			}
+			return;
+		}
+
+		// Find the note entry to get its card
+		const noteEntry = dueNotes.find((n) => n.path === nextPath);
+
+		if (!noteEntry) {
+			new Notice(`Error: Note ${nextPath} not found in due notes`);
+			this.updateStatus("Error loading note", false);
 			return;
 		}
 
@@ -168,12 +209,24 @@ export default class IncrementalReadingPlugin extends Plugin {
 		if (file instanceof TFile) {
 			await this.app.workspace.getLeaf(false).openFile(file);
 			this.currentNoteInReview = nextPath;
+			this.currentNoteCard = noteEntry.fsrsCard;
+
+			// Send card stats and interval previews to UI
+			if (this.currentNoteCard && this.onCardStatsChanged) {
+				const stats =
+					this.queueManager.getCardStats(this.currentNoteCard);
+				const intervals =
+					this.queueManager.previewIntervals(this.currentNoteCard);
+				this.onCardStatsChanged(stats, intervals);
+			}
+
 			if (this.onShowDifficultyPrompt) {
 				this.onShowDifficultyPrompt();
 			}
 		} else {
 			new Notice(`Could not open note: ${nextPath}`);
 			this.currentNoteInReview = null;
+			this.currentNoteCard = null;
 		}
 	}
 

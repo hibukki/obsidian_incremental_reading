@@ -1,143 +1,79 @@
+import { describe, it, expect } from "vitest";
+import { createEmptyCard } from "ts-fsrs";
 import { selectNextNote } from "./nextNoteSelector";
-import { QueueData } from "./types";
+import { NoteEntry } from "./types";
 
-function test(name: string, fn: () => void) {
-	try {
-		fn();
-		console.log(`✓ ${name}`);
-	} catch (error) {
-		console.error(`✗ ${name}`);
-		console.error(error);
-	}
-}
-
-function assertEquals(actual: any, expected: any, message?: string) {
-	if (actual !== expected) {
-		throw new Error(
-			`${message || "Assertion failed"}: expected ${expected}, got ${actual}`,
-		);
-	}
-}
-
+// Helper function to add/subtract days from a date
 function addDays(date: Date, days: number): Date {
 	const result = new Date(date);
 	result.setDate(result.getDate() + days);
 	return result;
 }
 
-// Test: Returns null when queue is empty
-test("returns null when queue is empty", () => {
-	const queue: QueueData = { notes: [] };
-	const next = selectNextNote(queue);
-	assertEquals(next, null, "Should return null when queue is empty");
-});
-
-// Test: Returns note due now
-test("returns note due now", () => {
-	const today = new Date();
-	const queue: QueueData = {
-		notes: [
-			{
-				path: "due-now.md",
-				dueDate: today.toISOString(),
-				intervalDays: 1,
-			},
-		],
+// Helper to create a note entry with a specific due date
+function createNote(path: string, dueDate: Date): NoteEntry {
+	return {
+		path,
+		fsrsCard: createEmptyCard(dueDate),
 	};
+}
 
-	const next = selectNextNote(queue);
-	assertEquals(next, "due-now.md", "Should return note due now");
+describe("selectNextNote", () => {
+	describe("empty queue", () => {
+		it("returns null when no notes provided", () => {
+			expect(selectNextNote([])).toBe(null);
+		});
+	});
+
+	describe("single note scheduling", () => {
+		it("returns note due today", () => {
+			const today = new Date();
+			const notes = [createNote("due-today.md", today)];
+
+			expect(selectNextNote(notes)).toBe("due-today.md");
+		});
+
+		it("returns overdue note", () => {
+			const yesterday = addDays(new Date(), -1);
+			const notes = [createNote("overdue.md", yesterday)];
+
+			expect(selectNextNote(notes)).toBe("overdue.md");
+		});
+
+		it("returns future note (if provided in due list)", () => {
+			const tomorrow = addDays(new Date(), 1);
+			const notes = [createNote("future.md", tomorrow)];
+
+			// The function just sorts - filtering is done by caller
+			expect(selectNextNote(notes)).toBe("future.md");
+		});
+	});
+
+	describe("multiple notes prioritization", () => {
+		it("returns most overdue note first", () => {
+			const threeDaysAgo = addDays(new Date(), -3);
+			const oneDayAgo = addDays(new Date(), -1);
+
+			const notes = [
+				createNote("recent-overdue.md", oneDayAgo),
+				createNote("very-overdue.md", threeDaysAgo),
+			];
+
+			expect(selectNextNote(notes)).toBe("very-overdue.md");
+		});
+
+		it("handles mixed due dates correctly", () => {
+			const threeDaysAgo = addDays(new Date(), -3);
+			const tomorrow = addDays(new Date(), 1);
+			const today = new Date();
+
+			const notes = [
+				createNote("future.md", tomorrow),
+				createNote("very-overdue.md", threeDaysAgo),
+				createNote("due-today.md", today),
+			];
+
+			expect(selectNextNote(notes)).toBe("very-overdue.md");
+		});
+	});
 });
-
-// Test: Returns overdue note
-test("returns overdue note", () => {
-	const yesterday = addDays(new Date(), -1);
-	const queue: QueueData = {
-		notes: [
-			{
-				path: "overdue.md",
-				dueDate: yesterday.toISOString(),
-				intervalDays: 1,
-			},
-		],
-	};
-
-	const next = selectNextNote(queue);
-	assertEquals(next, "overdue.md", "Should return overdue note");
-});
-
-// Test: Does NOT return future notes
-test("does not return future notes", () => {
-	const tomorrow = addDays(new Date(), 1);
-	const queue: QueueData = {
-		notes: [
-			{
-				path: "future.md",
-				dueDate: tomorrow.toISOString(),
-				intervalDays: 1,
-			},
-		],
-	};
-
-	const next = selectNextNote(queue);
-	assertEquals(next, null, "Should not return future notes");
-});
-
-// Test: Returns most overdue note when multiple are due
-test("returns most overdue note first", () => {
-	const threeDaysAgo = addDays(new Date(), -3);
-	const oneDayAgo = addDays(new Date(), -1);
-
-	const queue: QueueData = {
-		notes: [
-			{
-				path: "recent-overdue.md",
-				dueDate: oneDayAgo.toISOString(),
-				intervalDays: 1,
-			},
-			{
-				path: "very-overdue.md",
-				dueDate: threeDaysAgo.toISOString(),
-				intervalDays: 1,
-			},
-		],
-	};
-
-	const next = selectNextNote(queue);
-	assertEquals(
-		next,
-		"very-overdue.md",
-		"Should return most overdue note first",
-	);
-});
-
-// Test: Returns null when all notes are scheduled for future
-test("returns null when all notes are in future", () => {
-	const tomorrow = addDays(new Date(), 1);
-	const nextWeek = addDays(new Date(), 7);
-
-	const queue: QueueData = {
-		notes: [
-			{
-				path: "future1.md",
-				dueDate: tomorrow.toISOString(),
-				intervalDays: 1,
-			},
-			{
-				path: "future2.md",
-				dueDate: nextWeek.toISOString(),
-				intervalDays: 7,
-			},
-		],
-	};
-
-	const next = selectNextNote(queue);
-	assertEquals(
-		next,
-		null,
-		"Should return null when all notes are in future",
-	);
-});
-
-// Run all tests
-console.log("\nRunning nextNoteSelector tests...\n");
