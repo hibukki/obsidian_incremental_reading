@@ -1,4 +1,6 @@
 import React from "react";
+import { Rating } from "ts-fsrs";
+import { CardStats, IntervalPreviews } from "./types";
 
 export interface SidebarViewPureProps {
 	dueNowCount: number;
@@ -7,8 +9,8 @@ export interface SidebarViewPureProps {
 	status: string;
 	statusHappy: boolean;
 	showDifficultyButtons: boolean;
-	cardStats: any | null;
-	intervalPreviews: any | null;
+	cardStats: CardStats | null;
+	intervalPreviews: IntervalPreviews | null;
 	onShowNext: () => void;
 	onAddToQueue: () => void;
 	onShowQueue: () => void;
@@ -140,7 +142,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 							Again
 							{intervalPreviews && (
 								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
-									{intervalPreviews[1]}
+									{intervalPreviews[Rating.Again]}
 								</div>
 							)}
 						</button>
@@ -148,7 +150,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 							Hard
 							{intervalPreviews && (
 								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
-									{intervalPreviews[2]}
+									{intervalPreviews[Rating.Hard]}
 								</div>
 							)}
 						</button>
@@ -160,7 +162,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 							Good
 							{intervalPreviews && (
 								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
-									{intervalPreviews[3]}
+									{intervalPreviews[Rating.Good]}
 								</div>
 							)}
 						</button>
@@ -168,7 +170,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 							Easy
 							{intervalPreviews && (
 								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
-									{intervalPreviews[4]}
+									{intervalPreviews[Rating.Easy]}
 								</div>
 							)}
 						</button>

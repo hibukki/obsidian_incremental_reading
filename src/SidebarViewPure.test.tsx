@@ -1,5 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react";
+import { Rating, State } from "ts-fsrs";
 import { SidebarViewPure, SidebarViewPureProps } from "./SidebarViewPure";
 
 // Mock handlers
@@ -28,12 +29,13 @@ describe("SidebarViewPure", () => {
 					difficulty: 6.2,
 					reps: 4,
 					lapses: 1,
+					state: State.Review,
 				},
 				intervalPreviews: {
-					1: "10m",
-					2: "2h",
-					3: "1d",
-					4: "3d",
+					[Rating.Again]: "10m",
+					[Rating.Hard]: "2h",
+					[Rating.Good]: "1d",
+					[Rating.Easy]: "3d",
 				},
 				...mockHandlers,
 			};
