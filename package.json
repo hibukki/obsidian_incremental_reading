@@ -1,18 +1,18 @@
 {
-	"name": "obsidian-claude-copilot",
-	"version": "1.0.0",
-	"description": "AI-powered writing assistant for Obsidian using Claude",
+	"name": "obsidian-plugin-template",
+	"version": "0.1.0",
+	"description": "A template for building Obsidian plugins with React and TypeScript",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
-		"dev:link": "ln -s \"$PWD\" \"$npm_config_vault/.obsidian/plugins/claude-copilot\"",
+		"dev:link": "ln -s \"$PWD\" \"$npm_config_vault/.obsidian/plugins/plugin-template\"",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"lint": "eslint src/**/*.ts",
 		"format": "prettier --write .",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"prepare": "husky"
 	},
-	"keywords": [],
+	"keywords": ["obsidian", "obsidian-plugin", "template"],
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
@@ -27,13 +27,6 @@
 		"prettier": "^3.6.2",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
-	},
-	"dependencies": {
-		"@types/react": "^19.1.10",
-		"@types/react-dom": "^19.1.7",
-		"eslint": "^8.57.1",
-		"react": "^19.1.1",
-		"react-dom": "^19.1.1"
 	},
 	"lint-staged": {
 		"*": "prettier --write --ignore-unknown"

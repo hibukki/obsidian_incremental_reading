@@ -1,166 +1,79 @@
-import {
-	App,
-	ItemView,
-	WorkspaceLeaf,
-	Plugin,
-	Notice,
-	TFile,
-	debounce,
-	MarkdownView,
-	Editor,
-} from "obsidian";
-import React from "react";
-import { createRoot, Root } from "react-dom/client";
-import { CopilotApp } from "./src/components/CopilotApp";
-import { ClaudeCopilotSettingTab } from "./src/components/SettingsTab";
-import { ClaudeCopilotSettings } from "./src/types";
-import { Settings, CopilotReactAPI } from "./src/types/copilotState";
-import { insertCursorMarker } from "./src/utils/cursor";
+import { ItemView, WorkspaceLeaf, Plugin } from "obsidian";
 
-const DEFAULT_SETTINGS: ClaudeCopilotSettings = {
-	apiKey: "",
-	model: "claude-3-5-haiku-latest",
-	debounceDelay: 2000,
+const VIEW_TYPE_TEMPLATE = "plugin-template-view";
+
+interface TemplateSettings {
+	// Add your settings here
+}
+
+const DEFAULT_SETTINGS: TemplateSettings = {
+	// Add default settings here
 };
 
-const VIEW_TYPE_CLAUDE_COPILOT = "claude-copilot-view";
+class TemplateView extends ItemView {
+	plugin: TemplatePlugin;
 
-class ClaudeCopilotView extends ItemView {
-	plugin: ClaudeCopilotPlugin;
-	private root: Root | null = null;
-	private reactAPI: CopilotReactAPI | null = null;
-
-	constructor(leaf: WorkspaceLeaf, plugin: ClaudeCopilotPlugin) {
+	constructor(leaf: WorkspaceLeaf, plugin: TemplatePlugin) {
 		super(leaf);
 		this.plugin = plugin;
 	}
 
 	getViewType() {
-		return VIEW_TYPE_CLAUDE_COPILOT;
+		return VIEW_TYPE_TEMPLATE;
 	}
 
 	getDisplayText() {
-		return "Claude Copilot";
+		return "Plugin Template";
 	}
 
 	getIcon() {
-		return "bot";
+		return "layout-template";
 	}
 
 	async onOpen() {
 		const container = this.containerEl.children[1] as HTMLElement;
 		container.empty();
-
-		this.root = createRoot(container);
-
-		// Convert ClaudeCopilotSettings to our new Settings format
-		const initialSettings: Settings = {
-			apiKey: this.plugin.settings.apiKey,
-			model: this.plugin.settings.model,
-			debounceDelayMs: this.plugin.settings.debounceDelay,
-		};
-
-		this.root.render(
-			React.createElement(CopilotApp, {
-				initialSettings,
-				onApiReady: (api: CopilotReactAPI) => {
-					this.reactAPI = api;
-					this.plugin.onCopilotReady(api);
-				},
-				app: this.plugin.app,
-			}),
-		);
-	}
-
-	// Simple proxy methods that delegate to React
-	onEditorContentChanged(content: string, cursorPosition: number) {
-		this.reactAPI?.onEditorContentChanged(content, cursorPosition);
-	}
-
-	updateSettings(settings: Partial<Settings>) {
-		this.reactAPI?.updateSettings(settings);
+		container.createEl("h4", { text: "Plugin Template" });
 	}
 
 	async onClose() {
-		this.reactAPI?.cancelPendingQueries();
-		if (this.root) {
-			this.root.unmount();
-			this.root = null;
-		}
-		this.reactAPI = null;
+		// Cleanup if needed
 	}
 }
 
-export default class ClaudeCopilotPlugin extends Plugin {
-	settings: ClaudeCopilotSettings;
-	copilotView: ClaudeCopilotView;
-	private reactAPI: CopilotReactAPI | null = null;
+export default class TemplatePlugin extends Plugin {
+	settings: TemplateSettings;
 
 	async onload() {
-		console.log("Claude Copilot: Starting plugin load...");
-		try {
-			await this.loadSettings();
-			console.log("Claude Copilot: Settings loaded");
+		await this.loadSettings();
 
-			this.registerView(VIEW_TYPE_CLAUDE_COPILOT, (leaf) => {
-				this.copilotView = new ClaudeCopilotView(leaf, this);
-				return this.copilotView;
-			});
+		this.registerView(VIEW_TYPE_TEMPLATE, (leaf) => {
+			return new TemplateView(leaf, this);
+		});
 
-			this.addRibbonIcon("bot", "Claude Copilot", () => {
+		this.addRibbonIcon("layout-template", "Plugin Template", () => {
+			this.activateView();
+		});
+
+		this.addCommand({
+			id: "open-plugin-template",
+			name: "Open Plugin Template",
+			callback: () => {
 				this.activateView();
-			});
+			},
+		});
 
-			this.addCommand({
-				id: "open-claude-copilot",
-				name: "Open Claude Copilot",
-				callback: () => {
-					this.activateView();
-				},
-			});
-
-			this.addSettingTab(
-				new ClaudeCopilotSettingTab(this.app, this, (model: string) => {
-					this.onModelChanged(model);
-				}),
-			);
-
-			this.registerEvent(
-				this.app.workspace.on(
-					"editor-change",
-					(editor: Editor, info: MarkdownView) => {
-						this.handleDocumentChange(editor, info);
-					},
-				),
-			);
-
-			this.registerEvent(
-				this.app.workspace.on("active-leaf-change", () => {
-					const view =
-						this.app.workspace.getActiveViewOfType(MarkdownView);
-					if (view) {
-						this.handleDocumentChange(view.editor, view);
-					}
-				}),
-			);
-
-			this.app.workspace.onLayoutReady(() => {
-				setTimeout(() => {
-					this.activateView();
-				}, 100);
-			});
-			console.log("Claude Copilot: Plugin loaded successfully");
-		} catch (error) {
-			console.error("Claude Copilot: Error during plugin load:", error);
-			throw error;
-		}
+		// Optionally activate view on startup
+		this.app.workspace.onLayoutReady(() => {
+			this.activateView();
+		});
 	}
 
 	async activateView() {
 		const { workspace } = this.app;
 
 		let leaf: WorkspaceLeaf | null = null;
-		const leaves = workspace.getLeavesOfType(VIEW_TYPE_CLAUDE_COPILOT);
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_TEMPLATE);
 
 		if (leaves.length > 0) {
 			leaf = leaves[0];
@@ -173,33 +86,15 @@ export default class ClaudeCopilotPlugin extends Plugin {
 
 		if (leaf) {
 			await leaf.setViewState({
-				type: VIEW_TYPE_CLAUDE_COPILOT,
+				type: VIEW_TYPE_TEMPLATE,
 				active: true,
 			});
 			workspace.revealLeaf(leaf);
 		}
 	}
 
-	onCopilotReady(api: CopilotReactAPI) {
-		this.reactAPI = api;
-	}
-
-	handleDocumentChange(editor: Editor, _view: MarkdownView) {
-		const content = editor.getValue();
-		const cursor = editor.getCursor();
-		const cursorPos = editor.posToOffset(cursor);
-
-		// Delegate to React
-		this.copilotView?.onEditorContentChanged(content, cursorPos);
-	}
-
-	onModelChanged(model: string) {
-		console.log("Model changed to:", model);
-		this.reactAPI?.updateSettings({ model });
-	}
-
 	onunload() {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_CLAUDE_COPILOT);
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_TEMPLATE);
 	}
 
 	async loadSettings() {
@@ -212,12 +107,5 @@ export default class ClaudeCopilotPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-
-		// Sync settings to React
-		this.reactAPI?.updateSettings({
-			apiKey: this.settings.apiKey,
-			model: this.settings.model,
-			debounceDelayMs: this.settings.debounceDelay,
-		});
 	}
 }

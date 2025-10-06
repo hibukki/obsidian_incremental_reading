@@ -4,64 +4,75 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Obsidian plugin that provides AI-powered writing assistance using Claude AI. The plugin creates a sidebar panel that provides real-time feedback and suggestions as users write in their Obsidian vault.
+This is a minimal Obsidian plugin template that provides a starting point for building Obsidian plugins with TypeScript.
 
 ## Development Commands
 
 - `npm run dev` - Start development build with watch mode
 - `npm run build` - Production build with TypeScript checking and esbuild bundling
-- `npm run lint` - Run ESLint on TypeScript files in src/
-- `npm run version` - Bump version and update manifest/versions files
+- `npm run lint` - Run ESLint on TypeScript files
+- `npm run format` - Format code with Prettier
+- `npm run dev:link --vault=/path/to/vault` - Create symbolic link to develop in vault
 
 ## Architecture
 
 ### Core Components
 
 - **Main Plugin (`main.ts`)**: The primary plugin class that manages initialization, settings, and the plugin lifecycle
-- **ClaudeCopilotView**: Custom Obsidian ItemView that renders the React-based sidebar panel
-- **AnthropicClient (`src/services/anthropicClient.ts`)**: Handles API communication with Claude
-- **CopilotPanel (`src/components/CopilotPanel.tsx`)**: Main React component for the sidebar UI
-
-### Key Features
-
-- **Real-time Document Analysis**: Uses debounced editor change events to analyze document content
-- **Cursor-aware Prompts**: Inserts `<cursor/>` markers to show Claude the user's current position
-- **Customizable Prompts**: Users can edit the prompt template in `.claude_copilot/prompt.md`
-- **React Integration**: Uses React 19 with TypeScript for the UI components
+- **TemplateView**: Custom Obsidian ItemView that renders a simple sidebar panel
+- **TemplateSettings**: Interface for plugin settings with persistence
 
 ### File Structure
 
-- `src/services/` - API clients and external service integrations
-- `src/components/` - React components for the UI
-- `src/utils/` - Utility functions (cursor handling, XML parsing)
-- `src/types/` - TypeScript type definitions
-- `src/styles/` - CSS styling
-- `src/templates/` - Default prompt templates
+- `main.ts` - Main plugin file with core logic
+- `manifest.json` - Plugin manifest with metadata
+- `package.json` - NPM dependencies and scripts
+- `esbuild.config.mjs` - Build configuration
+- `tsconfig.json` - TypeScript configuration
 
 ### Build System
 
 Uses esbuild for bundling with:
 
 - TypeScript compilation
-- React JSX transformation
-- External dependencies (Obsidian API, CodeMirror)
+- External dependencies (Obsidian API)
 - Development watch mode and production minification
 
 ### Settings and Configuration
 
-- API key and model selection managed through Obsidian settings
-- Debounce delay configurable (default: 2000ms)
-- Prompt template stored in vault at `.claude_copilot/prompt.md`
-- Default model: `claude-3-5-haiku-latest`
+- Settings are persisted using Obsidian's data storage
+- Define settings in the `TemplateSettings` interface
+- Load settings with `loadSettings()` on plugin load
+- Save settings with `saveSettings()` when modified
 
-### Plugin Installation
+### Plugin Installation for Development
 
-The plugin creates a symbolic link for development:
+Use the npm script to create a symbolic link:
 
 ```sh
-ln -s "/PATH/TO/CURRENT/FOLDER" "/PATH/TO/OBSIDIAN/VAULT/.obsidian/plugins/OBSIDIAN-PLUGIN-NAME"
+npm run dev:link --vault=/path/to/your/vault
 ```
 
-### React Component Pattern
+This creates a symlink at `/path/to/your/vault/.obsidian/plugins/plugin-template`
 
-Components use inline styles defined in the main view rather than separate CSS files, following Obsidian's CSS variable system for theming consistency.
+### Customization Guide
+
+1. **Update Plugin Identity**:
+   - Change `id`, `name`, `description` in `manifest.json`
+   - Update `name`, `description` in `package.json`
+   - Update the symlink path in package.json `dev:link` script
+
+2. **Modify View**:
+   - Change `getDisplayText()` for sidebar title
+   - Change `getIcon()` for ribbon icon
+   - Modify `onOpen()` to customize the view content
+
+3. **Add Settings**:
+   - Define settings interface in `TemplateSettings`
+   - Add default values in `DEFAULT_SETTINGS`
+   - Optionally create a settings tab (see Obsidian API docs)
+
+4. **Add Features**:
+   - Register commands with `addCommand()`
+   - Register events with `registerEvent()`
+   - Add ribbon icons with `addRibbonIcon()`

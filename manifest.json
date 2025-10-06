@@ -1,10 +1,10 @@
 {
-	"id": "claude-copilot",
-	"name": "Claude Copilot",
-	"version": "1.0.0",
+	"id": "plugin-template",
+	"name": "Plugin Template",
+	"version": "0.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "AI-powered writing assistant that provides real-time feedback using Claude",
-	"author": "Claude Copilot",
+	"description": "A template for building Obsidian plugins",
+	"author": "",
 	"authorUrl": "",
-	"isDesktopOnly": true
+	"isDesktopOnly": false
 }
