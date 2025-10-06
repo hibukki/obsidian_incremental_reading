@@ -1,14 +1,10 @@
-# Obsidian Plugin Template
+# Incremental Reading Obsidian Plugin
 
-A minimal template for building Obsidian plugins with TypeScript.
+## Screenshot
 
-## Features
+<img width="1126" height="467" alt="image" src="https://github.com/user-attachments/assets/3f416409-0e9b-4ef3-b52e-cff57c0d9ded" />
 
-- TypeScript support with type checking
-- Hot reload during development
-- ESLint and Prettier configured
-- Simple sidebar view example
-- Settings persistence
+(The screenshot might not be up to date)
 
 ## Getting Started
 
