@@ -7,7 +7,7 @@ import { NoteEntry } from "./types";
  */
 export function selectNextNote(dueNotes: NoteEntry[]): string | null {
 	if (dueNotes.length === 0) {
-		return null; // No notes due today
+		return null; // No notes due
 	}
 
 	// Sort by due date (oldest first) and return the most overdue note

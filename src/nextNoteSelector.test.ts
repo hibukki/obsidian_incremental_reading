@@ -32,13 +32,13 @@ test("returns null when queue is empty", () => {
 	assertEquals(next, null, "Should return null when queue is empty");
 });
 
-// Test: Returns note due today
-test("returns note due today", () => {
+// Test: Returns note due now
+test("returns note due now", () => {
 	const today = new Date();
 	const queue: QueueData = {
 		notes: [
 			{
-				path: "due-today.md",
+				path: "due-now.md",
 				dueDate: today.toISOString(),
 				intervalDays: 1,
 			},
@@ -46,7 +46,7 @@ test("returns note due today", () => {
 	};
 
 	const next = selectNextNote(queue);
-	assertEquals(next, "due-today.md", "Should return note due today");
+	assertEquals(next, "due-now.md", "Should return note due now");
 });
 
 // Test: Returns overdue note
@@ -135,7 +135,7 @@ test("returns null when all notes are in future", () => {
 	assertEquals(
 		next,
 		null,
-		"Should return null when all notes are in future (done for today)",
+		"Should return null when all notes are in future",
 	);
 });
 

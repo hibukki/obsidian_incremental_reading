@@ -160,14 +160,12 @@ export class QueueManager {
 	 */
 	async getQueueStats(
 		allowCache: boolean = false,
-	): Promise<{ dueNow: number; dueToday: number; total: number }> {
+	): Promise<{ due: number; total: number }> {
 		const queue = await this.loadQueue(allowCache);
-		const dueNow = await this.getDueNotes(allowCache);
-		const scheduledToday = await this.getNotesScheduledToday(allowCache);
+		const due = await this.getDueNotes(allowCache);
 
 		return {
-			dueNow: dueNow.length,
-			dueToday: scheduledToday.length,
+			due: due.length,
 			total: queue.notes.length,
 		};
 	}
