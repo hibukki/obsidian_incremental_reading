@@ -12,7 +12,9 @@ export function selectNextNote(dueNotes: NoteEntry[]): string | null {
 
 	// Sort by due date (oldest first) and return the most overdue note
 	const sorted = [...dueNotes].sort(
-		(a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+		(a, b) =>
+			new Date(a.fsrsCard.due).getTime() -
+			new Date(b.fsrsCard.due).getTime(),
 	);
 
 	return sorted[0].path;

@@ -1,18 +1,14 @@
 import { App, TFile } from "obsidian";
-import { QueueData, NoteEntry } from "./types";
+import { QueueData, NoteEntry, LegacyNoteEntry } from "./types";
+import { fsrs, createEmptyCard, Rating, Card } from "ts-fsrs";
 
 const QUEUE_FILE_PATH = "queue.md";
-
-function addDays(date: Date, days: number): Date {
-	const result = new Date(date);
-	result.setDate(result.getDate() + days);
-	return result;
-}
 
 export class QueueManager {
 	private cachedQueue: QueueData | null = null;
 	private cacheTimestamp: number = 0;
 	private readonly CACHE_TTL_MS = 1000; // 1 second cache
+	private fsrs = fsrs(); // FSRS instance
 
 	constructor(private app: App) {}
 
@@ -43,7 +39,13 @@ export class QueueManager {
 			if (!parsed || !Array.isArray(parsed.notes)) {
 				throw new Error("Invalid queue format");
 			}
-			const queue = parsed as QueueData;
+
+			// Check if we need to migrate from legacy format
+			const notes = parsed.notes.map((note: any) =>
+				this.migrateNoteIfNeeded(note),
+			);
+
+			const queue = { notes };
 			this.updateCache(queue);
 			return queue;
 		} catch (error) {
@@ -52,6 +54,30 @@ export class QueueManager {
 			this.updateCache(emptyQueue);
 			return emptyQueue;
 		}
+	}
+
+	/**
+	 * Migrate legacy note format to FSRS format if needed.
+	 */
+	private migrateNoteIfNeeded(note: any): NoteEntry {
+		// Check if it's already in new format (has fsrsCard)
+		if (note.fsrsCard) {
+			return note as NoteEntry;
+		}
+
+		// Legacy format - convert to FSRS
+		const legacyNote = note as LegacyNoteEntry;
+		console.log(
+			`Migrating note ${legacyNote.path} from legacy format to FSRS`,
+		);
+
+		// Create a new FSRS card
+		const card = createEmptyCard(new Date(legacyNote.dueDate));
+
+		return {
+			path: legacyNote.path,
+			fsrsCard: card,
+		};
 	}
 
 	private updateCache(queue: QueueData): void {
@@ -97,7 +123,7 @@ export class QueueManager {
 		);
 
 		return queue.notes.filter((note) => {
-			const dueDate = new Date(note.dueDate);
+			const dueDate = new Date(note.fsrsCard.due);
 			return dueDate <= todayEnd;
 		});
 	}
@@ -129,11 +155,14 @@ export class QueueManager {
 			return;
 		}
 
-		const dueDate = addDays(new Date(), daysUntilDue);
+		// Create a new FSRS card with the specified due date
+		const dueDate = new Date();
+		dueDate.setDate(dueDate.getDate() + daysUntilDue);
+		const card = createEmptyCard(dueDate);
+
 		queue.notes.push({
 			path,
-			dueDate: dueDate.toISOString(),
-			intervalDays: daysUntilDue,
+			fsrsCard: card,
 		});
 
 		await this.saveQueue(queue);
@@ -153,17 +182,17 @@ export class QueueManager {
 
 		const note = queue.notes[noteIndex];
 
-		if (difficulty === "hard") {
-			// Hard: reset to 1 day
-			note.intervalDays = 1;
-		} else {
-			// Easy: double the interval
-			note.intervalDays = note.intervalDays * 2;
-		}
+		// Map our difficulty to FSRS ratings
+		// Hard → Again (forgot, need to review soon)
+		// Easy → Good (remembered well, standard progression)
+		const rating = difficulty === "hard" ? Rating.Again : Rating.Good;
 
-		// Schedule for the future
-		const dueDate = addDays(new Date(), note.intervalDays);
-		note.dueDate = dueDate.toISOString();
+		// Use FSRS to schedule the next review
+		const now = new Date();
+		const schedulingInfo = this.fsrs.repeat(note.fsrsCard, now);
+
+		// Update the card with the new scheduling info
+		note.fsrsCard = schedulingInfo[rating].card;
 
 		await this.saveQueue(queue);
 	}
