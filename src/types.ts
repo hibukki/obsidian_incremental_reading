@@ -1,4 +1,4 @@
-import { Card, ReviewLog } from "ts-fsrs";
+import { Card, ReviewLog, Rating } from "ts-fsrs";
 
 export interface NoteEntry {
 	path: string;
@@ -17,4 +17,21 @@ export interface LegacyNoteEntry {
 	path: string;
 	dueDate: string;
 	intervalDays: number;
+}
+
+// Card statistics for UI display
+export interface CardStats {
+	stability: number;
+	difficulty: number;
+	reps: number;
+	lapses: number;
+	state: number;
+}
+
+// Interval previews for each rating option
+export interface IntervalPreviews {
+	[Rating.Again]: string;
+	[Rating.Hard]: string;
+	[Rating.Good]: string;
+	[Rating.Easy]: string;
 }

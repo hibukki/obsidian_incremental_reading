@@ -4,7 +4,8 @@ import { selectNextNote } from "./src/nextNoteSelector";
 import { Root, createRoot } from "react-dom/client";
 import { SidebarView } from "./src/SidebarView";
 import React from "react";
-import { Rating } from "ts-fsrs";
+import { Rating, Card } from "ts-fsrs";
+import { CardStats, IntervalPreviews } from "./src/types";
 
 const VIEW_TYPE_INCREMENTAL = "incremental-reading-view";
 
@@ -59,14 +60,14 @@ export default class IncrementalReadingPlugin extends Plugin {
 	settings: IncrementalReadingSettings;
 	queueManager: QueueManager;
 	currentNoteInReview: string | null = null;
-	currentNoteCard: any | null = null; // Store current card for stats/preview
+	currentNoteCard: Card | null = null; // Store current card for stats/preview
 
 	// Callbacks for React to hook into
 	onUpdateUI?: (message: string, isHappy: boolean) => void;
 	onShowDifficultyPrompt?: () => void;
 	onHideDifficultyPrompt?: () => void;
 	onCountersChanged?: () => void;
-	onCardStatsChanged?: (stats: any, intervals: any) => void;
+	onCardStatsChanged?: (stats: CardStats, intervals: IntervalPreviews) => void;
 
 	async onload() {
 		await this.loadSettings();
@@ -197,12 +198,18 @@ export default class IncrementalReadingPlugin extends Plugin {
 		// Find the note entry to get its card
 		const noteEntry = dueNotes.find((n) => n.path === nextPath);
 
+		if (!noteEntry) {
+			new Notice(`Error: Note ${nextPath} not found in due notes`);
+			this.updateStatus("Error loading note", false);
+			return;
+		}
+
 		// Open the note
 		const file = this.app.vault.getAbstractFileByPath(nextPath);
 		if (file instanceof TFile) {
 			await this.app.workspace.getLeaf(false).openFile(file);
 			this.currentNoteInReview = nextPath;
-			this.currentNoteCard = noteEntry?.fsrsCard || null;
+			this.currentNoteCard = noteEntry.fsrsCard;
 
 			// Send card stats and interval previews to UI
 			if (this.currentNoteCard && this.onCardStatsChanged) {

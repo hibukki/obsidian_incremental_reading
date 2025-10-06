@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { App } from "obsidian";
 import IncrementalReadingPlugin from "../main";
 import { Rating } from "ts-fsrs";
+import { CardStats, IntervalPreviews } from "./types";
 
 interface SidebarViewProps {
 	app: App;
@@ -16,8 +17,9 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const [statusHappy, setStatusHappy] = useState<boolean>(false);
 	const [showDifficultyButtons, setShowDifficultyButtons] =
 		useState<boolean>(false);
-	const [cardStats, setCardStats] = useState<any>(null);
-	const [intervalPreviews, setIntervalPreviews] = useState<any>(null);
+	const [cardStats, setCardStats] = useState<CardStats | null>(null);
+	const [intervalPreviews, setIntervalPreviews] =
+		useState<IntervalPreviews | null>(null);
 
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
@@ -51,7 +53,10 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			updateCounters();
 		};
 
-		plugin.onCardStatsChanged = (stats: any, intervals: any) => {
+		plugin.onCardStatsChanged = (
+			stats: CardStats,
+			intervals: IntervalPreviews,
+		) => {
 			setCardStats(stats);
 			setIntervalPreviews(intervals);
 		};
@@ -201,7 +206,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 							Again
 							{intervalPreviews && (
 								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
-									{intervalPreviews[1]}
+									{intervalPreviews[Rating.Again]}
 								</div>
 							)}
 						</button>
@@ -209,7 +214,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 							Hard
 							{intervalPreviews && (
 								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
-									{intervalPreviews[2]}
+									{intervalPreviews[Rating.Hard]}
 								</div>
 							)}
 						</button>
@@ -221,7 +226,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 							Good
 							{intervalPreviews && (
 								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
-									{intervalPreviews[3]}
+									{intervalPreviews[Rating.Good]}
 								</div>
 							)}
 						</button>
@@ -229,7 +234,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 							Easy
 							{intervalPreviews && (
 								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
-									{intervalPreviews[4]}
+									{intervalPreviews[Rating.Easy]}
 								</div>
 							)}
 						</button>

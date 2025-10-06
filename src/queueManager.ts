@@ -1,5 +1,11 @@
 import { App, TFile } from "obsidian";
-import { QueueData, NoteEntry, LegacyNoteEntry } from "./types";
+import {
+	QueueData,
+	NoteEntry,
+	LegacyNoteEntry,
+	CardStats,
+	IntervalPreviews,
+} from "./types";
 import { fsrs, createEmptyCard, Rating, Card } from "ts-fsrs";
 
 const QUEUE_FILE_PATH = "queue.md";
@@ -235,7 +241,7 @@ export class QueueManager {
 	/**
 	 * Get statistics for a specific note's card.
 	 */
-	getCardStats(card: Card) {
+	getCardStats(card: Card): CardStats {
 		return {
 			stability: Math.round(card.stability * 10) / 10, // Round to 1 decimal
 			difficulty: Math.round(card.difficulty * 10) / 10,
@@ -249,9 +255,7 @@ export class QueueManager {
 	 * Preview what the next intervals would be for each rating.
 	 * Returns intervals in a human-readable format.
 	 */
-	previewIntervals(card: Card): {
-		[key in Rating]: string;
-	} {
+	previewIntervals(card: Card): IntervalPreviews {
 		const now = new Date();
 		const schedulingInfo = this.fsrs.repeat(card, now);
 
