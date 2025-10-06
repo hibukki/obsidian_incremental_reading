@@ -12,7 +12,7 @@ const QUEUE_FILE_PATH = "queue.md";
 
 export class QueueManager {
 	private cachedQueue: QueueData | null = null;
-	private cacheTimestamp: number = 0;
+	private cacheTimestamp = 0;
 	private readonly CACHE_TTL_MS = 1000; // 1 second cache
 	// FSRS instance with parameters optimized for incremental reading
 	private fsrs = fsrs({
@@ -24,7 +24,7 @@ export class QueueManager {
 
 	constructor(private app: App) {}
 
-	async loadQueue(allowCache: boolean = false): Promise<QueueData> {
+	async loadQueue(allowCache = false): Promise<QueueData> {
 		// Check if we can use cache
 		if (allowCache && this.cachedQueue) {
 			const now = Date.now();
@@ -53,8 +53,9 @@ export class QueueManager {
 			}
 
 			// Check if we need to migrate from legacy format
-			const notes = parsed.notes.map((note: any) =>
-				this.migrateNoteIfNeeded(note),
+			const notes = parsed.notes.map(
+				(note: NoteEntry | LegacyNoteEntry) =>
+					this.migrateNoteIfNeeded(note),
 			);
 
 			const queue = { notes };
@@ -71,23 +72,20 @@ export class QueueManager {
 	/**
 	 * Migrate legacy note format to FSRS format if needed.
 	 */
-	private migrateNoteIfNeeded(note: any): NoteEntry {
+	private migrateNoteIfNeeded(note: NoteEntry | LegacyNoteEntry): NoteEntry {
 		// Check if it's already in new format (has fsrsCard)
-		if (note.fsrsCard) {
-			return note as NoteEntry;
+		if ("fsrsCard" in note) {
+			return note;
 		}
 
 		// Legacy format - convert to FSRS
-		const legacyNote = note as LegacyNoteEntry;
-		console.log(
-			`Migrating note ${legacyNote.path} from legacy format to FSRS`,
-		);
+		console.log(`Migrating note ${note.path} from legacy format to FSRS`);
 
 		// Create a new FSRS card
-		const card = createEmptyCard(new Date(legacyNote.dueDate));
+		const card = createEmptyCard(new Date(note.dueDate));
 
 		return {
-			path: legacyNote.path,
+			path: note.path,
 			fsrsCard: card,
 		};
 	}
@@ -121,7 +119,7 @@ export class QueueManager {
 	 * @param allowCache If true, may return cached data (for UI display).
 	 *                   If false, always loads fresh data (for decision-making).
 	 */
-	async getDueNotes(allowCache: boolean = false): Promise<NoteEntry[]> {
+	async getDueNotes(allowCache = false): Promise<NoteEntry[]> {
 		const queue = await this.loadQueue(allowCache);
 		const now = new Date();
 
@@ -135,9 +133,7 @@ export class QueueManager {
 	 * Get notes that are due today (anytime today, even if not yet due).
 	 * Used for UI counter display.
 	 */
-	async getNotesScheduledToday(
-		allowCache: boolean = false,
-	): Promise<NoteEntry[]> {
+	async getNotesScheduledToday(allowCache = false): Promise<NoteEntry[]> {
 		const queue = await this.loadQueue(allowCache);
 		const now = new Date();
 		const todayStart = new Date(
@@ -171,7 +167,7 @@ export class QueueManager {
 	 *                   If false, always loads fresh data (for accuracy).
 	 */
 	async getQueueStats(
-		allowCache: boolean = false,
+		allowCache = false,
 	): Promise<{ dueNow: number; dueToday: number; total: number }> {
 		const queue = await this.loadQueue(allowCache);
 		const dueNow = await this.getDueNotes(allowCache);
@@ -184,7 +180,7 @@ export class QueueManager {
 		};
 	}
 
-	async addToQueue(path: string, daysUntilDue: number = 0): Promise<void> {
+	async addToQueue(path: string, daysUntilDue = 0): Promise<void> {
 		const queue = await this.loadQueue();
 
 		// Check if already in queue
@@ -279,7 +275,9 @@ export class QueueManager {
 		};
 
 		return {
-			[Rating.Again]: formatInterval(schedulingInfo[Rating.Again].card.due),
+			[Rating.Again]: formatInterval(
+				schedulingInfo[Rating.Again].card.due,
+			),
 			[Rating.Hard]: formatInterval(schedulingInfo[Rating.Hard].card.due),
 			[Rating.Good]: formatInterval(schedulingInfo[Rating.Good].card.due),
 			[Rating.Easy]: formatInterval(schedulingInfo[Rating.Easy].card.due),
