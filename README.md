@@ -2,7 +2,7 @@
 
 ## Screenshot
 
-<img width="1126" height="467" alt="image" src="https://github.com/user-attachments/assets/3f416409-0e9b-4ef3-b52e-cff57c0d9ded" />
+<img width="1121" height="585" alt="image" src="https://github.com/user-attachments/assets/ffba8260-ccdf-43be-89c5-95b0b75c9706" />
 
 (The screenshot might not be up to date)
 
@@ -29,8 +29,6 @@ Create a symbolic link to develop the plugin in your vault:
 ```sh
 npm run dev:link --vault=/path/to/your/vault
 ```
-
-This will create a symlink at `/path/to/your/vault/.obsidian/plugins/plugin-template`
 
 ### Build for production
 
