@@ -30,8 +30,6 @@ Create a symbolic link to develop the plugin in your vault:
 npm run dev:link --vault=/path/to/your/vault
 ```
 
-This will create a symlink at `/path/to/your/vault/.obsidian/plugins/plugin-template`
-
 ### Build for production
 
 ```sh
