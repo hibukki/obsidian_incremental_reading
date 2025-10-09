@@ -67,7 +67,10 @@ export default class IncrementalReadingPlugin extends Plugin {
 	onShowDifficultyPrompt?: () => void;
 	onHideDifficultyPrompt?: () => void;
 	onCountersChanged?: () => void;
-	onCardStatsChanged?: (stats: CardStats, intervals: IntervalPreviews) => void;
+	onCardStatsChanged?: (
+		stats: CardStats,
+		intervals: IntervalPreviews,
+	) => void;
 
 	async onload() {
 		await this.loadSettings();
@@ -151,9 +154,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 						this.onCountersChanged();
 					}
 				} else {
-					new Notice(
-						`"${activeFile.basename}" is not in the queue`,
-					);
+					new Notice(`"${activeFile.basename}" is not in the queue`);
 				}
 			},
 		});
@@ -213,10 +214,12 @@ export default class IncrementalReadingPlugin extends Plugin {
 
 			// Send card stats and interval previews to UI
 			if (this.currentNoteCard && this.onCardStatsChanged) {
-				const stats =
-					this.queueManager.getCardStats(this.currentNoteCard);
-				const intervals =
-					this.queueManager.previewIntervals(this.currentNoteCard);
+				const stats = this.queueManager.getCardStats(
+					this.currentNoteCard,
+				);
+				const intervals = this.queueManager.previewIntervals(
+					this.currentNoteCard,
+				);
 				this.onCardStatsChanged(stats, intervals);
 			}
 

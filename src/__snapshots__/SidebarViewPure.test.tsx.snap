@@ -1,0 +1,283 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SidebarViewPure Additional Scenarios renders correctly when there are notes due later today 1`] = `
+<div>
+  <div>
+    <h4>
+      Incremental Reading
+    </h4>
+    <div
+      style="margin-bottom: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due now: 
+        0
+      </div>
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due today: 
+        8
+      </div>
+      <div>
+        Total in queue: 
+        20
+      </div>
+    </div>
+    <button
+      class=""
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Show Next
+    </button>
+    <button
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Add Current Note to Queue
+    </button>
+    <div
+      style="margin-top: 20px; padding: 10px; text-align: center;"
+    />
+    <button
+      style="margin-top: 20px; width: 100%; font-size: 0.9em; opacity: 0.7;"
+    >
+      Show Queue (debug)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`SidebarViewPure Additional Scenarios renders correctly with status message after rating 1`] = `
+<div>
+  <div>
+    <h4>
+      Incremental Reading
+    </h4>
+    <div
+      style="margin-bottom: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due now: 
+        3
+      </div>
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due today: 
+        7
+      </div>
+      <div>
+        Total in queue: 
+        18
+      </div>
+    </div>
+    <button
+      class="mod-cta"
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Show Next
+    </button>
+    <button
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Add Current Note to Queue
+    </button>
+    <div
+      style="margin-top: 20px; padding: 10px; text-align: center;"
+    >
+      Scheduled for 2 hours
+    </div>
+    <button
+      style="margin-top: 20px; width: 100%; font-size: 0.9em; opacity: 0.7;"
+    >
+      Show Queue (debug)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`SidebarViewPure Snapshot Tests renders correctly when there are due notes and user is reviewing one 1`] = `
+<div>
+  <div>
+    <h4>
+      Incremental Reading
+    </h4>
+    <div
+      style="margin-bottom: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due now: 
+        5
+      </div>
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due today: 
+        12
+      </div>
+      <div>
+        Total in queue: 
+        25
+      </div>
+    </div>
+    <button
+      class="mod-cta"
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Show Next
+    </button>
+    <button
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Add Current Note to Queue
+    </button>
+    <div
+      style="margin-top: 15px; padding: 10px; border-radius: 5px; font-size: 0.9em;"
+    >
+      <div
+        style="margin-bottom: 3px;"
+      >
+        <strong>
+          Card Stats:
+        </strong>
+      </div>
+      <div
+        style="margin-bottom: 2px;"
+      >
+        Memory: 
+        3.5
+        d | Difficulty:
+         
+        6.2
+        /10
+      </div>
+      <div
+        style="font-size: 0.85em; opacity: 0.8;"
+      >
+        Reviews: 
+        4
+         | Forgotten:
+         
+        1
+      </div>
+    </div>
+    <div
+      style="margin-top: 20px; padding: 10px; text-align: center;"
+    >
+      How was this note? (Use commands or click below)
+      <div
+        style="margin-top: 10px; margin-bottom: 5px; font-size: 0.85em; opacity: 0.7;"
+      >
+        Next review intervals:
+      </div>
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;"
+      >
+        <button
+          style="flex: 1;"
+        >
+          Again
+          <div
+            style="font-size: 0.75em; opacity: 0.7;"
+          >
+            10m
+          </div>
+        </button>
+        <button
+          style="flex: 1;"
+        >
+          Hard
+          <div
+            style="font-size: 0.75em; opacity: 0.7;"
+          >
+            2h
+          </div>
+        </button>
+        <button
+          class="mod-cta"
+          style="flex: 1;"
+        >
+          Good
+          <div
+            style="font-size: 0.75em; opacity: 0.7;"
+          >
+            1d
+          </div>
+        </button>
+        <button
+          style="flex: 1;"
+        >
+          Easy
+          <div
+            style="font-size: 0.75em; opacity: 0.7;"
+          >
+            3d
+          </div>
+        </button>
+      </div>
+    </div>
+    <button
+      style="margin-top: 20px; width: 100%; font-size: 0.9em; opacity: 0.7;"
+    >
+      Show Queue (debug)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`SidebarViewPure Snapshot Tests renders correctly when there are no notes to review 1`] = `
+<div>
+  <div>
+    <h4>
+      Incremental Reading
+    </h4>
+    <div
+      style="margin-bottom: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due now: 
+        0
+      </div>
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due today: 
+        0
+      </div>
+      <div>
+        Total in queue: 
+        15
+      </div>
+    </div>
+    <button
+      class=""
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Show Next
+    </button>
+    <button
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Add Current Note to Queue
+    </button>
+    <div
+      style="margin-top: 20px; padding: 10px; text-align: center;"
+    >
+      🎉 Done for today! All caught up!
+    </div>
+    <button
+      style="margin-top: 20px; width: 100%; font-size: 0.9em; opacity: 0.7;"
+    >
+      Show Queue (debug)
+    </button>
+  </div>
+</div>
+`;
