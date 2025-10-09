@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+// Using Jest instead of Vitest
 import { createEmptyCard } from "ts-fsrs";
 import { selectNextNote } from "./nextNoteSelector";
 import { NoteEntry } from "./types";
