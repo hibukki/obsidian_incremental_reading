@@ -67,7 +67,10 @@ export default class IncrementalReadingPlugin extends Plugin {
 	onShowDifficultyPrompt?: () => void;
 	onHideDifficultyPrompt?: () => void;
 	onCountersChanged?: () => void;
-	onCardStatsChanged?: (stats: CardStats, intervals: IntervalPreviews) => void;
+	onCardStatsChanged?: (
+		stats: CardStats,
+		intervals: IntervalPreviews,
+	) => void;
 
 	async onload() {
 		await this.loadSettings();
@@ -151,9 +154,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 						this.onCountersChanged();
 					}
 				} else {
-					new Notice(
-						`"${activeFile.basename}" is not in the queue`,
-					);
+					new Notice(`"${activeFile.basename}" is not in the queue`);
 				}
 			},
 		});
@@ -198,42 +199,27 @@ export default class IncrementalReadingPlugin extends Plugin {
 		// Find the note entry to get its card
 		const noteEntry = dueNotes.find((n) => n.path === nextPath);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 6d336f1 (fix: improve type safety and fix array indexing bug)
 		if (!noteEntry) {
 			new Notice(`Error: Note ${nextPath} not found in due notes`);
 			this.updateStatus("Error loading note", false);
 			return;
 		}
 
-<<<<<<< HEAD
-=======
->>>>>>> ad1721d (feat: implement ts-fsrs advanced features)
-=======
->>>>>>> 6d336f1 (fix: improve type safety and fix array indexing bug)
 		// Open the note
 		const file = this.app.vault.getAbstractFileByPath(nextPath);
 		if (file instanceof TFile) {
 			await this.app.workspace.getLeaf(false).openFile(file);
 			this.currentNoteInReview = nextPath;
-<<<<<<< HEAD
-<<<<<<< HEAD
 			this.currentNoteCard = noteEntry.fsrsCard;
-=======
-			this.currentNoteCard = noteEntry?.fsrsCard || null;
->>>>>>> ad1721d (feat: implement ts-fsrs advanced features)
-=======
-			this.currentNoteCard = noteEntry.fsrsCard;
->>>>>>> 6d336f1 (fix: improve type safety and fix array indexing bug)
 
 			// Send card stats and interval previews to UI
 			if (this.currentNoteCard && this.onCardStatsChanged) {
-				const stats =
-					this.queueManager.getCardStats(this.currentNoteCard);
-				const intervals =
-					this.queueManager.previewIntervals(this.currentNoteCard);
+				const stats = this.queueManager.getCardStats(
+					this.currentNoteCard,
+				);
+				const intervals = this.queueManager.previewIntervals(
+					this.currentNoteCard,
+				);
 				this.onCardStatsChanged(stats, intervals);
 			}
 
