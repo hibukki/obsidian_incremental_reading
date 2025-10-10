@@ -4,6 +4,7 @@ import IncrementalReadingPlugin from "../main";
 import { Rating } from "ts-fsrs";
 import { SidebarViewPure } from "./SidebarViewPure";
 import { CardStats, IntervalPreviews, Priority } from "./types";
+import { selectNextNote } from "./nextNoteSelector";
 
 interface SidebarViewProps {
 	app: App;
@@ -27,6 +28,14 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const [currentPriority, setCurrentPriority] = useState<Priority | null>(
 		null,
 	);
+	const [isCurrentNoteInQueue, setIsCurrentNoteInQueue] =
+		useState<boolean>(false);
+	const [currentNoteName, setCurrentNoteName] = useState<string | null>(null);
+	const [currentNoteDueDate, setCurrentNoteDueDate] = useState<Date | null>(
+		null,
+	);
+	const [isCurrentNoteTheNextNote, setIsCurrentNoteTheNextNote] =
+		useState<boolean>(false);
 
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
@@ -35,8 +44,70 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 		setTotalCount(stats.total);
 	};
 
+	const checkIfCurrentNoteInQueue = async () => {
+		const activeFile = app.workspace.getActiveFile();
+		if (!activeFile) {
+			setIsCurrentNoteInQueue(false);
+			setCurrentNoteName(null);
+			setCurrentNoteDueDate(null);
+			setShowDifficultyButtons(false);
+			setCardStats(null);
+			setIntervalPreviews(null);
+			setCurrentPriority(null);
+			setIsCurrentNoteTheNextNote(false);
+			return;
+		}
+		setCurrentNoteName(activeFile.basename);
+		const inQueue = await plugin.queueManager.isNoteInQueue(
+			activeFile.path,
+			true,
+		);
+		setIsCurrentNoteInQueue(inQueue);
+
+		// Check if the current note is the next note
+		const dueNotes = await plugin.queueManager.getDueNotes(true);
+		const nextNotePath = selectNextNote(dueNotes);
+		setIsCurrentNoteTheNextNote(
+			nextNotePath !== null && nextNotePath === activeFile.path,
+		);
+
+		// If the note is in the queue, load its card data
+		if (inQueue) {
+			const queue = await plugin.queueManager.loadQueue(true);
+			const noteData = queue.notes.find(
+				(n) => n.path === activeFile.path,
+			);
+			if (noteData) {
+				const stats = plugin.queueManager.getCardStats(
+					noteData.fsrsCard,
+				);
+				const intervals = plugin.queueManager.previewIntervals(
+					noteData.fsrsCard,
+				);
+				const dueDate = new Date(noteData.fsrsCard.due);
+				const isDue = dueDate <= new Date();
+
+				setCardStats(stats);
+				setIntervalPreviews(intervals);
+				setCurrentPriority(noteData.priority ?? null);
+				setCurrentNoteDueDate(dueDate);
+
+				// Only show difficulty buttons if the note is actually due
+				setShowDifficultyButtons(isDue);
+			}
+		} else {
+			// Not in queue, hide difficulty buttons
+			setShowDifficultyButtons(false);
+			setCardStats(null);
+			setIntervalPreviews(null);
+			setCurrentPriority(null);
+			setCurrentNoteDueDate(null);
+		}
+	};
+
 	useEffect(() => {
 		updateCounters();
+		checkIfCurrentNoteInQueue();
 
 		// Register callback for plugin to update UI
 		plugin.onUpdateUI = (message: string, isHappy: boolean) => {
@@ -44,50 +115,33 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			setStatusHappy(isHappy);
 		};
 
-		plugin.onShowDifficultyPrompt = () => {
-			setShowDifficultyButtons(true);
-			setStatus("How was this note? (Use commands or click below)");
-		};
-
-		plugin.onHideDifficultyPrompt = () => {
-			setShowDifficultyButtons(false);
-			setCardStats(null);
-			setIntervalPreviews(null);
-			setCurrentPriority(null);
-		};
-
 		plugin.onCountersChanged = () => {
 			updateCounters();
+			checkIfCurrentNoteInQueue(); // Queue changed, recheck current note
 		};
 
-		plugin.onCardStatsChanged = (
-			stats: CardStats,
-			intervals: IntervalPreviews,
-		) => {
-			setCardStats(stats);
-			setIntervalPreviews(intervals);
-		};
-
-		plugin.onPriorityChanged = (priority: Priority) => {
-			setCurrentPriority(priority);
-		};
+		// Listen for active file changes
+		const activeFileChangeHandler = app.workspace.on(
+			"active-leaf-change",
+			() => {
+				checkIfCurrentNoteInQueue();
+			},
+		);
 
 		// Auto-refresh counters every 30 seconds
 		// (to catch notes that become due, like "Again" rated notes)
 		const refreshInterval = setInterval(() => {
 			updateCounters();
+			checkIfCurrentNoteInQueue();
 		}, 30000); // 30 seconds
 
 		return () => {
 			plugin.onUpdateUI = undefined;
-			plugin.onShowDifficultyPrompt = undefined;
-			plugin.onHideDifficultyPrompt = undefined;
 			plugin.onCountersChanged = undefined;
-			plugin.onCardStatsChanged = undefined;
-			plugin.onPriorityChanged = undefined;
+			app.workspace.offref(activeFileChangeHandler);
 			clearInterval(refreshInterval);
 		};
-	}, [plugin]);
+	}, [plugin, app]);
 
 	const handleShowQueue = async () => {
 		await plugin.openQueueFile();
@@ -131,6 +185,10 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			cardStats={cardStats}
 			intervalPreviews={intervalPreviews}
 			currentPriority={currentPriority}
+			isCurrentNoteInQueue={isCurrentNoteInQueue}
+			currentNoteName={currentNoteName}
+			currentNoteDueDate={currentNoteDueDate}
+			isCurrentNoteTheNextNote={isCurrentNoteTheNextNote}
 			onShowNext={handleShowNext}
 			onAddToQueue={handleAddToQueue}
 			onShowQueue={handleShowQueue}

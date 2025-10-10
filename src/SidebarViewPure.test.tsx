@@ -22,7 +22,7 @@ describe("SidebarViewPure", () => {
 			const props: SidebarViewPureProps = {
 				dueCount: 5,
 				totalCount: 25,
-				status: "How was this note? (Use commands or click below)",
+				status: "",
 				statusHappy: false,
 				showDifficultyButtons: true,
 				cardStats: {
@@ -39,6 +39,10 @@ describe("SidebarViewPure", () => {
 					[Rating.Easy]: "3d",
 				},
 				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: true,
+				currentNoteName: "test-note",
+				currentNoteDueDate: new Date(Date.now() - 3600000), // Due 1 hour ago
+				isCurrentNoteTheNextNote: true, // This is the next note
 				...mockHandlers,
 			};
 
@@ -56,6 +60,10 @@ describe("SidebarViewPure", () => {
 				cardStats: null,
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: false,
+				currentNoteName: "test-note",
+				currentNoteDueDate: null,
+				isCurrentNoteTheNextNote: false,
 				...mockHandlers,
 			};
 
@@ -75,6 +83,10 @@ describe("SidebarViewPure", () => {
 				cardStats: null,
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: false,
+				currentNoteName: null,
+				currentNoteDueDate: null,
+				isCurrentNoteTheNextNote: false,
 				...mockHandlers,
 			};
 
@@ -92,6 +104,52 @@ describe("SidebarViewPure", () => {
 				cardStats: null,
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: false,
+				currentNoteName: "test-note",
+				currentNoteDueDate: null,
+				isCurrentNoteTheNextNote: false,
+				...mockHandlers,
+			};
+
+			const { container } = render(<SidebarViewPure {...props} />);
+			expect(container).toMatchSnapshot();
+		});
+
+		test("renders correctly when current note is in queue (not reviewing)", () => {
+			const props: SidebarViewPureProps = {
+				dueCount: 5,
+				totalCount: 20,
+				status: "",
+				statusHappy: false,
+				showDifficultyButtons: false,
+				cardStats: null,
+				intervalPreviews: null,
+				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: true,
+				currentNoteName: "queued-note",
+				currentNoteDueDate: new Date(Date.now() + 86400000 * 5), // Due in 5 days
+				isCurrentNoteTheNextNote: false,
+				...mockHandlers,
+			};
+
+			const { container } = render(<SidebarViewPure {...props} />);
+			expect(container).toMatchSnapshot();
+		});
+
+		test("renders correctly when current note is not in queue (not reviewing)", () => {
+			const props: SidebarViewPureProps = {
+				dueCount: 5,
+				totalCount: 20,
+				status: "",
+				statusHappy: false,
+				showDifficultyButtons: false,
+				cardStats: null,
+				intervalPreviews: null,
+				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: false,
+				currentNoteName: "not-queued-note",
+				currentNoteDueDate: null,
+				isCurrentNoteTheNextNote: false,
 				...mockHandlers,
 			};
 
