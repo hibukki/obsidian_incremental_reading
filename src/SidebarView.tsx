@@ -27,6 +27,8 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const [currentPriority, setCurrentPriority] = useState<Priority | null>(
 		null,
 	);
+	const [isCurrentNoteInQueue, setIsCurrentNoteInQueue] =
+		useState<boolean>(false);
 
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
@@ -35,8 +37,22 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 		setTotalCount(stats.total);
 	};
 
+	const checkIfCurrentNoteInQueue = async () => {
+		const activeFile = app.workspace.getActiveFile();
+		if (!activeFile) {
+			setIsCurrentNoteInQueue(false);
+			return;
+		}
+		const inQueue = await plugin.queueManager.isNoteInQueue(
+			activeFile.path,
+			true,
+		);
+		setIsCurrentNoteInQueue(inQueue);
+	};
+
 	useEffect(() => {
 		updateCounters();
+		checkIfCurrentNoteInQueue();
 
 		// Register callback for plugin to update UI
 		plugin.onUpdateUI = (message: string, isHappy: boolean) => {
@@ -58,6 +74,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 
 		plugin.onCountersChanged = () => {
 			updateCounters();
+			checkIfCurrentNoteInQueue(); // Queue changed, recheck current note
 		};
 
 		plugin.onCardStatsChanged = (
@@ -72,10 +89,19 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			setCurrentPriority(priority);
 		};
 
+		// Listen for active file changes
+		const activeFileChangeHandler = app.workspace.on(
+			"active-leaf-change",
+			() => {
+				checkIfCurrentNoteInQueue();
+			},
+		);
+
 		// Auto-refresh counters every 30 seconds
 		// (to catch notes that become due, like "Again" rated notes)
 		const refreshInterval = setInterval(() => {
 			updateCounters();
+			checkIfCurrentNoteInQueue();
 		}, 30000); // 30 seconds
 
 		return () => {
@@ -85,9 +111,10 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			plugin.onCountersChanged = undefined;
 			plugin.onCardStatsChanged = undefined;
 			plugin.onPriorityChanged = undefined;
+			app.workspace.offref(activeFileChangeHandler);
 			clearInterval(refreshInterval);
 		};
-	}, [plugin]);
+	}, [plugin, app]);
 
 	const handleShowQueue = async () => {
 		await plugin.openQueueFile();
@@ -131,6 +158,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			cardStats={cardStats}
 			intervalPreviews={intervalPreviews}
 			currentPriority={currentPriority}
+			isCurrentNoteInQueue={isCurrentNoteInQueue}
 			onShowNext={handleShowNext}
 			onAddToQueue={handleAddToQueue}
 			onShowQueue={handleShowQueue}

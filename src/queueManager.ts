@@ -298,4 +298,14 @@ export class QueueManager {
 		await this.saveQueue(queue);
 		return true;
 	}
+
+	/**
+	 * Check if a note is in the queue.
+	 * @param path The path of the note to check
+	 * @param allowCache If true, may use cached data
+	 */
+	async isNoteInQueue(path: string, allowCache = true): Promise<boolean> {
+		const queue = await this.loadQueue(allowCache);
+		return queue.notes.some((n) => n.path === path);
+	}
 }

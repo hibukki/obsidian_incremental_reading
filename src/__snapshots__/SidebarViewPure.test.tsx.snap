@@ -1,5 +1,85 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`SidebarViewPure Additional Scenarios renders correctly when current note is in queue (not reviewing) 1`] = `
+<div>
+  <div>
+    <h4>
+      Incremental Reading
+    </h4>
+    <div
+      style="margin-bottom: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due: 
+        5
+      </div>
+      <div>
+        Total in queue: 
+        20
+      </div>
+    </div>
+    <button
+      class="mod-cta"
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Show Next
+    </button>
+    <div
+      style="margin-bottom: 10px; padding: 10px; border-radius: 5px; text-align: center; opacity: 0.8;"
+    >
+      ✓ Current note is in queue
+    </div>
+    <button
+      style="margin-top: 20px; width: 100%; font-size: 0.9em; opacity: 0.7;"
+    >
+      Show Queue (debug)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`SidebarViewPure Additional Scenarios renders correctly when current note is not in queue (not reviewing) 1`] = `
+<div>
+  <div>
+    <h4>
+      Incremental Reading
+    </h4>
+    <div
+      style="margin-bottom: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 5px;"
+      >
+        Due: 
+        5
+      </div>
+      <div>
+        Total in queue: 
+        20
+      </div>
+    </div>
+    <button
+      class="mod-cta"
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Show Next
+    </button>
+    <button
+      style="margin-bottom: 10px; width: 100%;"
+    >
+      Add Current Note to Queue
+    </button>
+    <button
+      style="margin-top: 20px; width: 100%; font-size: 0.9em; opacity: 0.7;"
+    >
+      Show Queue (debug)
+    </button>
+  </div>
+</div>
+`;
+
 exports[`SidebarViewPure Additional Scenarios renders correctly when there are notes due later today 1`] = `
 <div>
   <div>
@@ -31,37 +111,6 @@ exports[`SidebarViewPure Additional Scenarios renders correctly when there are n
     >
       Add Current Note to Queue
     </button>
-    <div
-      style="margin-top: 15px; padding: 10px; border-radius: 5px;"
-    >
-      <div
-        style="margin-bottom: 8px; font-weight: bold;"
-      >
-        Priority:
-      </div>
-      <div
-        style="display: flex; gap: 6px;"
-      >
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
-        >
-          High
-        </button>
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
-        >
-          Normal
-        </button>
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
-        >
-          Low
-        </button>
-      </div>
-    </div>
-    <div
-      style="margin-top: 20px; padding: 10px; text-align: center;"
-    />
     <button
       style="margin-top: 20px; width: 100%; font-size: 0.9em; opacity: 0.7;"
     >
@@ -103,35 +152,7 @@ exports[`SidebarViewPure Additional Scenarios renders correctly with status mess
       Add Current Note to Queue
     </button>
     <div
-      style="margin-top: 15px; padding: 10px; border-radius: 5px;"
-    >
-      <div
-        style="margin-bottom: 8px; font-weight: bold;"
-      >
-        Priority:
-      </div>
-      <div
-        style="display: flex; gap: 6px;"
-      >
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
-        >
-          High
-        </button>
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
-        >
-          Normal
-        </button>
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
-        >
-          Low
-        </button>
-      </div>
-    </div>
-    <div
-      style="margin-top: 20px; padding: 10px; text-align: center;"
+      style="margin-top: 10px; padding: 10px; text-align: center;"
     >
       Scheduled for 2 hours
     </div>
@@ -164,47 +185,63 @@ exports[`SidebarViewPure Snapshot Tests renders correctly when there are due not
         25
       </div>
     </div>
-    <button
-      class="mod-cta"
-      style="margin-bottom: 10px; width: 100%;"
-    >
-      Show Next
-    </button>
-    <button
-      style="margin-bottom: 10px; width: 100%;"
-    >
-      Add Current Note to Queue
-    </button>
     <div
-      style="margin-top: 15px; padding: 10px; border-radius: 5px;"
+      style="margin-bottom: 10px; padding: 10px; text-align: center;"
     >
-      <div
-        style="margin-bottom: 8px; font-weight: bold;"
-      >
-        Priority:
-      </div>
-      <div
-        style="display: flex; gap: 6px;"
-      >
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
-        >
-          High
-        </button>
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
-        >
-          Normal
-        </button>
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
-        >
-          Low
-        </button>
-      </div>
+      How was this note? (Use commands or click below)
     </div>
     <div
-      style="margin-top: 15px; padding: 10px; border-radius: 5px; font-size: 0.9em;"
+      style="margin-bottom: 5px; font-size: 0.85em; opacity: 0.7; text-align: center;"
+    >
+      Next review intervals:
+    </div>
+    <div
+      style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;"
+    >
+      <button
+        style="flex: 1;"
+      >
+        Again
+        <div
+          style="font-size: 0.75em; opacity: 0.7;"
+        >
+          10m
+        </div>
+      </button>
+      <button
+        style="flex: 1;"
+      >
+        Hard
+        <div
+          style="font-size: 0.75em; opacity: 0.7;"
+        >
+          2h
+        </div>
+      </button>
+      <button
+        class="mod-cta"
+        style="flex: 1;"
+      >
+        Good
+        <div
+          style="font-size: 0.75em; opacity: 0.7;"
+        >
+          1d
+        </div>
+      </button>
+      <button
+        style="flex: 1;"
+      >
+        Easy
+        <div
+          style="font-size: 0.75em; opacity: 0.7;"
+        >
+          3d
+        </div>
+      </button>
+    </div>
+    <div
+      style="margin-bottom: 15px; padding: 10px; border-radius: 5px; font-size: 0.9em;"
     >
       <div
         style="margin-bottom: 3px;"
@@ -234,57 +271,30 @@ exports[`SidebarViewPure Snapshot Tests renders correctly when there are due not
       </div>
     </div>
     <div
-      style="margin-top: 20px; padding: 10px; text-align: center;"
+      style="margin-bottom: 15px; padding: 10px; border-radius: 5px;"
     >
-      How was this note? (Use commands or click below)
       <div
-        style="margin-top: 10px; margin-bottom: 5px; font-size: 0.85em; opacity: 0.7;"
+        style="margin-bottom: 8px; font-weight: bold; font-size: 0.9em;"
       >
-        Next review intervals:
+        Priority:
       </div>
       <div
-        style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;"
+        style="display: flex; gap: 6px;"
       >
         <button
-          style="flex: 1;"
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
         >
-          Again
-          <div
-            style="font-size: 0.75em; opacity: 0.7;"
-          >
-            10m
-          </div>
+          High
         </button>
         <button
-          style="flex: 1;"
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
         >
-          Hard
-          <div
-            style="font-size: 0.75em; opacity: 0.7;"
-          >
-            2h
-          </div>
+          Normal
         </button>
         <button
-          class="mod-cta"
-          style="flex: 1;"
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
         >
-          Good
-          <div
-            style="font-size: 0.75em; opacity: 0.7;"
-          >
-            1d
-          </div>
-        </button>
-        <button
-          style="flex: 1;"
-        >
-          Easy
-          <div
-            style="font-size: 0.75em; opacity: 0.7;"
-          >
-            3d
-          </div>
+          Low
         </button>
       </div>
     </div>
@@ -329,35 +339,7 @@ exports[`SidebarViewPure Snapshot Tests renders correctly when there are no note
       Add Current Note to Queue
     </button>
     <div
-      style="margin-top: 15px; padding: 10px; border-radius: 5px;"
-    >
-      <div
-        style="margin-bottom: 8px; font-weight: bold;"
-      >
-        Priority:
-      </div>
-      <div
-        style="display: flex; gap: 6px;"
-      >
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
-        >
-          High
-        </button>
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
-        >
-          Normal
-        </button>
-        <button
-          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
-        >
-          Low
-        </button>
-      </div>
-    </div>
-    <div
-      style="margin-top: 20px; padding: 10px; text-align: center;"
+      style="margin-top: 10px; padding: 10px; text-align: center;"
     >
       🎉 Done for today! All caught up!
     </div>

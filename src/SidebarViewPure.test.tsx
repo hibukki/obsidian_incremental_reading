@@ -39,6 +39,7 @@ describe("SidebarViewPure", () => {
 					[Rating.Easy]: "3d",
 				},
 				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: true,
 				...mockHandlers,
 			};
 
@@ -56,6 +57,7 @@ describe("SidebarViewPure", () => {
 				cardStats: null,
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: false,
 				...mockHandlers,
 			};
 
@@ -75,6 +77,7 @@ describe("SidebarViewPure", () => {
 				cardStats: null,
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: false,
 				...mockHandlers,
 			};
 
@@ -92,6 +95,43 @@ describe("SidebarViewPure", () => {
 				cardStats: null,
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: false,
+				...mockHandlers,
+			};
+
+			const { container } = render(<SidebarViewPure {...props} />);
+			expect(container).toMatchSnapshot();
+		});
+
+		test("renders correctly when current note is in queue (not reviewing)", () => {
+			const props: SidebarViewPureProps = {
+				dueCount: 5,
+				totalCount: 20,
+				status: "",
+				statusHappy: false,
+				showDifficultyButtons: false,
+				cardStats: null,
+				intervalPreviews: null,
+				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: true,
+				...mockHandlers,
+			};
+
+			const { container } = render(<SidebarViewPure {...props} />);
+			expect(container).toMatchSnapshot();
+		});
+
+		test("renders correctly when current note is not in queue (not reviewing)", () => {
+			const props: SidebarViewPureProps = {
+				dueCount: 5,
+				totalCount: 20,
+				status: "",
+				statusHappy: false,
+				showDifficultyButtons: false,
+				cardStats: null,
+				intervalPreviews: null,
+				currentPriority: Priority.Normal,
+				isCurrentNoteInQueue: false,
 				...mockHandlers,
 			};
 

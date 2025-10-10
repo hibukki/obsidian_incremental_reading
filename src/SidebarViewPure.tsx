@@ -11,6 +11,7 @@ export interface SidebarViewPureProps {
 	cardStats: CardStats | null;
 	intervalPreviews: IntervalPreviews | null;
 	currentPriority: Priority | null;
+	isCurrentNoteInQueue: boolean;
 	onShowNext: () => void;
 	onAddToQueue: () => void;
 	onShowQueue: () => void;
@@ -34,6 +35,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 	cardStats,
 	intervalPreviews,
 	currentPriority,
+	isCurrentNoteInQueue,
 	onShowNext,
 	onAddToQueue,
 	onShowQueue,
@@ -47,7 +49,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 		<div>
 			<h4>Incremental Reading</h4>
 
-			{/* Queue stats */}
+			{/* Queue stats - always visible at top */}
 			<div
 				style={{
 					marginBottom: "15px",
@@ -60,174 +62,84 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 				<div>Total in queue: {totalCount}</div>
 			</div>
 
-			{/* Show Next button - primary only when there are notes to show */}
-			<button
-				className={dueCount > 0 ? "mod-cta" : ""}
-				style={{ marginBottom: "10px", width: "100%" }}
-				onClick={onShowNext}
-			>
-				Show Next
-			</button>
-
-			{/* Add to Queue button */}
-			<button
-				style={{ marginBottom: "10px", width: "100%" }}
-				onClick={onAddToQueue}
-			>
-				Add Current Note to Queue
-			</button>
-
-			{/* Priority selector (when reviewing) */}
-			{currentPriority !== null && (
-				<div
-					style={{
-						marginTop: "15px",
-						padding: "10px",
-						backgroundColor: "var(--background-secondary)",
-						borderRadius: "5px",
-					}}
-				>
-					<div style={{ marginBottom: "8px", fontWeight: "bold" }}>
-						Priority:
-					</div>
-					<div
-						style={{
-							display: "flex",
-							gap: "6px",
-						}}
+			{/* When NOT reviewing: Show queue management actions */}
+			{!showDifficultyButtons && (
+				<>
+					{/* Show Next button - primary action when there are notes due */}
+					<button
+						className={dueCount > 0 ? "mod-cta" : ""}
+						style={{ marginBottom: "10px", width: "100%" }}
+						onClick={onShowNext}
 					>
+						Show Next
+					</button>
+
+					{/* Add to Queue button - only show if current note is NOT in queue */}
+					{!isCurrentNoteInQueue && (
 						<button
-							style={{
-								flex: "1",
-								padding: "6px",
-								backgroundColor:
-									currentPriority === Priority.High
-										? "var(--interactive-accent)"
-										: "var(--background-modifier-border)",
-								color:
-									currentPriority === Priority.High
-										? "var(--text-on-accent)"
-										: "var(--text-normal)",
-								border: "none",
-								borderRadius: "4px",
-								cursor: "pointer",
-								fontWeight:
-									currentPriority === Priority.High
-										? "bold"
-										: "normal",
-							}}
-							onClick={() => onSetPriority(Priority.High)}
+							style={{ marginBottom: "10px", width: "100%" }}
+							onClick={onAddToQueue}
 						>
-							High
+							Add Current Note to Queue
 						</button>
-						<button
+					)}
+
+					{/* Already in queue indicator - show when current note IS in queue */}
+					{isCurrentNoteInQueue && (
+						<div
 							style={{
-								flex: "1",
-								padding: "6px",
-								backgroundColor:
-									currentPriority === Priority.Normal
-										? "var(--interactive-accent)"
-										: "var(--background-modifier-border)",
-								color:
-									currentPriority === Priority.Normal
-										? "var(--text-on-accent)"
-										: "var(--text-normal)",
-								border: "none",
-								borderRadius: "4px",
-								cursor: "pointer",
-								fontWeight:
-									currentPriority === Priority.Normal
-										? "bold"
-										: "normal",
+								marginBottom: "10px",
+								padding: "10px",
+								backgroundColor: "var(--background-secondary)",
+								borderRadius: "5px",
+								textAlign: "center",
+								opacity: 0.8,
 							}}
-							onClick={() => onSetPriority(Priority.Normal)}
 						>
-							Normal
-						</button>
-						<button
-							style={{
-								flex: "1",
-								padding: "6px",
-								backgroundColor:
-									currentPriority === Priority.Low
-										? "var(--interactive-accent)"
-										: "var(--background-modifier-border)",
-								color:
-									currentPriority === Priority.Low
-										? "var(--text-on-accent)"
-										: "var(--text-normal)",
-								border: "none",
-								borderRadius: "4px",
-								cursor: "pointer",
-								fontWeight:
-									currentPriority === Priority.Low
-										? "bold"
-										: "normal",
-							}}
-							onClick={() => onSetPriority(Priority.Low)}
-						>
-							Low
-						</button>
-					</div>
-				</div>
+							✓ Current note is in queue
+						</div>
+					)}
+				</>
 			)}
 
-			{/* Card Statistics (when reviewing) */}
-			{cardStats && (
-				<div
-					style={{
-						marginTop: "15px",
-						padding: "10px",
-						backgroundColor: "var(--background-secondary)",
-						borderRadius: "5px",
-						fontSize: "0.9em",
-					}}
-				>
-					<div style={{ marginBottom: "3px" }}>
-						<strong>Card Stats:</strong>
-					</div>
-					<div style={{ marginBottom: "2px" }}>
-						Memory: {cardStats.stability}d | Difficulty:{" "}
-						{cardStats.difficulty}/10
-					</div>
-					<div style={{ fontSize: "0.85em", opacity: 0.8 }}>
-						Reviews: {cardStats.reps} | Forgotten:{" "}
-						{cardStats.lapses}
-					</div>
-				</div>
-			)}
-
-			{/* Status message area */}
-			<div
-				style={{
-					marginTop: "20px",
-					padding: "10px",
-					textAlign: "center",
-					color: statusHappy
-						? "var(--text-success)"
-						: "var(--text-normal)",
-				}}
-			>
-				{status}
-				{showDifficultyButtons && intervalPreviews && (
+			{/* When reviewing: Show difficulty buttons prominently at top */}
+			{showDifficultyButtons && (
+				<>
+					{/* Status message */}
 					<div
 						style={{
-							marginTop: "10px",
-							marginBottom: "5px",
-							fontSize: "0.85em",
-							opacity: 0.7,
+							marginBottom: "10px",
+							padding: "10px",
+							textAlign: "center",
+							color: statusHappy
+								? "var(--text-success)"
+								: "var(--text-normal)",
 						}}
 					>
-						Next review intervals:
+						{status}
 					</div>
-				)}
-				{showDifficultyButtons && (
+
+					{/* Next review intervals preview */}
+					{intervalPreviews && (
+						<div
+							style={{
+								marginBottom: "5px",
+								fontSize: "0.85em",
+								opacity: 0.7,
+								textAlign: "center",
+							}}
+						>
+							Next review intervals:
+						</div>
+					)}
+
+					{/* Difficulty buttons - primary action during review */}
 					<div
 						style={{
 							display: "grid",
 							gridTemplateColumns: "1fr 1fr",
 							gap: "8px",
-							marginTop: "10px",
+							marginBottom: "15px",
 						}}
 					>
 						<button style={{ flex: "1" }} onClick={onMarkAgain}>
@@ -275,10 +187,154 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 							)}
 						</button>
 					</div>
-				)}
-			</div>
 
-			{/* Show Queue button - less prominent, at the bottom */}
+					{/* Card Statistics - shown during review for context */}
+					{cardStats && (
+						<div
+							style={{
+								marginBottom: "15px",
+								padding: "10px",
+								backgroundColor: "var(--background-secondary)",
+								borderRadius: "5px",
+								fontSize: "0.9em",
+							}}
+						>
+							<div style={{ marginBottom: "3px" }}>
+								<strong>Card Stats:</strong>
+							</div>
+							<div style={{ marginBottom: "2px" }}>
+								Memory: {cardStats.stability}d | Difficulty:{" "}
+								{cardStats.difficulty}/10
+							</div>
+							<div style={{ fontSize: "0.85em", opacity: 0.8 }}>
+								Reviews: {cardStats.reps} | Forgotten:{" "}
+								{cardStats.lapses}
+							</div>
+						</div>
+					)}
+
+					{/* Priority selector - moved down, less prominent (rare action) */}
+					{currentPriority !== null && (
+						<div
+							style={{
+								marginBottom: "15px",
+								padding: "10px",
+								backgroundColor: "var(--background-secondary)",
+								borderRadius: "5px",
+							}}
+						>
+							<div
+								style={{
+									marginBottom: "8px",
+									fontWeight: "bold",
+									fontSize: "0.9em",
+								}}
+							>
+								Priority:
+							</div>
+							<div
+								style={{
+									display: "flex",
+									gap: "6px",
+								}}
+							>
+								<button
+									style={{
+										flex: "1",
+										padding: "6px",
+										backgroundColor:
+											currentPriority === Priority.High
+												? "var(--interactive-accent)"
+												: "var(--background-modifier-border)",
+										color:
+											currentPriority === Priority.High
+												? "var(--text-on-accent)"
+												: "var(--text-normal)",
+										border: "none",
+										borderRadius: "4px",
+										cursor: "pointer",
+										fontWeight:
+											currentPriority === Priority.High
+												? "bold"
+												: "normal",
+									}}
+									onClick={() => onSetPriority(Priority.High)}
+								>
+									High
+								</button>
+								<button
+									style={{
+										flex: "1",
+										padding: "6px",
+										backgroundColor:
+											currentPriority === Priority.Normal
+												? "var(--interactive-accent)"
+												: "var(--background-modifier-border)",
+										color:
+											currentPriority === Priority.Normal
+												? "var(--text-on-accent)"
+												: "var(--text-normal)",
+										border: "none",
+										borderRadius: "4px",
+										cursor: "pointer",
+										fontWeight:
+											currentPriority === Priority.Normal
+												? "bold"
+												: "normal",
+									}}
+									onClick={() =>
+										onSetPriority(Priority.Normal)
+									}
+								>
+									Normal
+								</button>
+								<button
+									style={{
+										flex: "1",
+										padding: "6px",
+										backgroundColor:
+											currentPriority === Priority.Low
+												? "var(--interactive-accent)"
+												: "var(--background-modifier-border)",
+										color:
+											currentPriority === Priority.Low
+												? "var(--text-on-accent)"
+												: "var(--text-normal)",
+										border: "none",
+										borderRadius: "4px",
+										cursor: "pointer",
+										fontWeight:
+											currentPriority === Priority.Low
+												? "bold"
+												: "normal",
+									}}
+									onClick={() => onSetPriority(Priority.Low)}
+								>
+									Low
+								</button>
+							</div>
+						</div>
+					)}
+				</>
+			)}
+
+			{/* Status message when NOT reviewing */}
+			{!showDifficultyButtons && status && (
+				<div
+					style={{
+						marginTop: "10px",
+						padding: "10px",
+						textAlign: "center",
+						color: statusHappy
+							? "var(--text-success)"
+							: "var(--text-normal)",
+					}}
+				>
+					{status}
+				</div>
+			)}
+
+			{/* Show Queue button - debug feature, kept at bottom */}
 			<button
 				style={{
 					marginTop: "20px",
