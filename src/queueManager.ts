@@ -130,38 +130,6 @@ export class QueueManager {
 	}
 
 	/**
-	 * Get notes that are due today (anytime today, even if not yet due).
-	 * Used for UI counter display.
-	 */
-	async getNotesScheduledToday(allowCache = false): Promise<NoteEntry[]> {
-		const queue = await this.loadQueue(allowCache);
-		const now = new Date();
-		const todayStart = new Date(
-			now.getFullYear(),
-			now.getMonth(),
-			now.getDate(),
-			0,
-			0,
-			0,
-			0,
-		);
-		const todayEnd = new Date(
-			now.getFullYear(),
-			now.getMonth(),
-			now.getDate(),
-			23,
-			59,
-			59,
-			999,
-		);
-
-		return queue.notes.filter((note) => {
-			const dueDate = new Date(note.fsrsCard.due);
-			return dueDate >= todayStart && dueDate <= todayEnd;
-		});
-	}
-
-	/**
 	 * Get queue statistics.
 	 * @param allowCache If true, may return cached data (for UI display).
 	 *                   If false, always loads fresh data (for accuracy).
