@@ -30,6 +30,9 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const [isCurrentNoteInQueue, setIsCurrentNoteInQueue] =
 		useState<boolean>(false);
 	const [currentNoteName, setCurrentNoteName] = useState<string | null>(null);
+	const [currentNoteDueDate, setCurrentNoteDueDate] = useState<Date | null>(
+		null,
+	);
 
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
@@ -43,6 +46,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 		if (!activeFile) {
 			setIsCurrentNoteInQueue(false);
 			setCurrentNoteName(null);
+			setCurrentNoteDueDate(null);
 			setShowDifficultyButtons(false);
 			setCardStats(null);
 			setIntervalPreviews(null);
@@ -56,7 +60,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 		);
 		setIsCurrentNoteInQueue(inQueue);
 
-		// If the note is in the queue, load its card data and show difficulty buttons
+		// If the note is in the queue, load its card data
 		if (inQueue) {
 			const queue = await plugin.queueManager.loadQueue(true);
 			const noteData = queue.notes.find(
@@ -69,11 +73,16 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 				const intervals = plugin.queueManager.previewIntervals(
 					noteData.fsrsCard,
 				);
+				const dueDate = new Date(noteData.fsrsCard.due);
+				const isDue = dueDate <= new Date();
+
 				setCardStats(stats);
 				setIntervalPreviews(intervals);
 				setCurrentPriority(noteData.priority ?? null);
-				setShowDifficultyButtons(true);
-				setStatus("How was this note? (Use commands or click below)");
+				setCurrentNoteDueDate(dueDate);
+
+				// Only show difficulty buttons if the note is actually due
+				setShowDifficultyButtons(isDue);
 			}
 		} else {
 			// Not in queue, hide difficulty buttons
@@ -81,6 +90,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			setCardStats(null);
 			setIntervalPreviews(null);
 			setCurrentPriority(null);
+			setCurrentNoteDueDate(null);
 		}
 	};
 
@@ -166,6 +176,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			currentPriority={currentPriority}
 			isCurrentNoteInQueue={isCurrentNoteInQueue}
 			currentNoteName={currentNoteName}
+			currentNoteDueDate={currentNoteDueDate}
 			onShowNext={handleShowNext}
 			onAddToQueue={handleAddToQueue}
 			onShowQueue={handleShowQueue}

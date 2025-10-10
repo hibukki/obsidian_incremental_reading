@@ -13,6 +13,7 @@ export interface SidebarViewPureProps {
 	currentPriority: Priority | null;
 	isCurrentNoteInQueue: boolean;
 	currentNoteName: string | null;
+	currentNoteDueDate: Date | null;
 	onShowNext: () => void;
 	onAddToQueue: () => void;
 	onShowQueue: () => void;
@@ -38,6 +39,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 	currentPriority,
 	isCurrentNoteInQueue,
 	currentNoteName,
+	currentNoteDueDate,
 	onShowNext,
 	onAddToQueue,
 	onShowQueue,
@@ -47,83 +49,81 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 	onMarkEasy,
 	onSetPriority,
 }) => {
+	// Helper function to format due date
+	const formatDueDate = (dueDate: Date): string => {
+		const now = new Date();
+		const diffMs = dueDate.getTime() - now.getTime();
+		const diffMins = Math.round(diffMs / (1000 * 60));
+		const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+		const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+		if (diffMins < 60) {
+			return `${diffMins} min${diffMins !== 1 ? "s" : ""}`;
+		} else if (diffHours < 24) {
+			return `${diffHours} hour${diffHours !== 1 ? "s" : ""}`;
+		} else {
+			return `${diffDays} day${diffDays !== 1 ? "s" : ""}`;
+		}
+	};
 	return (
 		<div>
 			<h4>Incremental Reading</h4>
 
-			{/* Queue stats - always visible at top */}
-			<div
-				style={{
-					marginBottom: "15px",
-					padding: "10px",
-					backgroundColor: "var(--background-secondary)",
-					borderRadius: "5px",
-				}}
+			{/* Show Next button - always visible at top */}
+			<button
+				className={dueCount > 0 ? "mod-cta" : ""}
+				style={{ marginBottom: "10px", width: "100%" }}
+				onClick={onShowNext}
 			>
-				<div style={{ marginBottom: "5px" }}>Due: {dueCount}</div>
-				<div>Total in queue: {totalCount}</div>
-			</div>
+				{dueCount > 0
+					? `Show next (${dueCount} left)`
+					: "Show next (none due)"}
+			</button>
 
-			{/* Debug: Current note name */}
-			<div
-				style={{
-					marginBottom: "15px",
-					padding: "8px",
-					backgroundColor: "var(--background-secondary)",
-					borderRadius: "5px",
-					fontSize: "0.85em",
-					opacity: 0.7,
-				}}
-			>
-				<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-					Debug - Current note:
-				</div>
-				<div>{currentNoteName || "(no active note)"}</div>
-			</div>
-
-			{/* When NOT reviewing: Show queue management actions */}
-			{!showDifficultyButtons && (
-				<>
-					{/* Show Next button - primary action when there are notes due */}
-					<button
-						className={dueCount > 0 ? "mod-cta" : ""}
-						style={{ marginBottom: "10px", width: "100%" }}
-						onClick={onShowNext}
+			{/* When current note is in queue but not due */}
+			{isCurrentNoteInQueue &&
+				!showDifficultyButtons &&
+				currentNoteDueDate && (
+					<div
+						style={{
+							marginBottom: "10px",
+							padding: "10px",
+							backgroundColor: "var(--background-secondary)",
+							borderRadius: "5px",
+							textAlign: "center",
+							opacity: 0.8,
+						}}
 					>
-						Show Next
-					</button>
+						Note in queue (due in{" "}
+						{formatDueDate(currentNoteDueDate)})
+					</div>
+				)}
 
-					{/* Add to Queue button - only show if current note is NOT in queue */}
-					{!isCurrentNoteInQueue && (
-						<button
-							style={{ marginBottom: "10px", width: "100%" }}
-							onClick={onAddToQueue}
-						>
-							Add Current Note to Queue
-						</button>
-					)}
-
-					{/* Already in queue indicator - show when current note IS in queue */}
-					{isCurrentNoteInQueue && (
-						<div
-							style={{
-								marginBottom: "10px",
-								padding: "10px",
-								backgroundColor: "var(--background-secondary)",
-								borderRadius: "5px",
-								textAlign: "center",
-								opacity: 0.8,
-							}}
-						>
-							✓ Current note is in queue
-						</div>
-					)}
-				</>
+			{/* Add to Queue button - only show if current note is NOT in queue */}
+			{!isCurrentNoteInQueue && (
+				<button
+					style={{ marginBottom: "10px", width: "100%" }}
+					onClick={onAddToQueue}
+				>
+					Add Current Note to Queue
+				</button>
 			)}
 
 			{/* When reviewing: Show difficulty buttons prominently at top */}
 			{showDifficultyButtons && (
 				<>
+					{/* Prompt text above difficulty buttons */}
+					<div
+						style={{
+							marginBottom: "10px",
+							textAlign: "center",
+							fontSize: "0.9em",
+							fontWeight: "bold",
+						}}
+					>
+						How was this note?
+					</div>
+
 					{/* Difficulty buttons - primary action, minimal text */}
 					<div
 						style={{
@@ -281,68 +281,11 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 							</div>
 						</div>
 					)}
-
-					{/* Status message */}
-					{status && (
-						<div
-							style={{
-								marginBottom: "10px",
-								padding: "8px",
-								textAlign: "center",
-								fontSize: "0.9em",
-								color: statusHappy
-									? "var(--text-success)"
-									: "var(--text-normal)",
-							}}
-						>
-							{status}
-						</div>
-					)}
-
-					{/* Debug section: Card Statistics */}
-					{cardStats && (
-						<details
-							style={{
-								marginTop: "20px",
-								fontSize: "0.85em",
-								opacity: 0.7,
-							}}
-						>
-							<summary
-								style={{
-									cursor: "pointer",
-									marginBottom: "8px",
-									fontSize: "0.9em",
-								}}
-							>
-								Debug: Card Stats
-							</summary>
-							<div
-								style={{
-									padding: "10px",
-									backgroundColor:
-										"var(--background-secondary)",
-									borderRadius: "5px",
-								}}
-							>
-								<div style={{ marginBottom: "2px" }}>
-									Memory: {cardStats.stability}d | Difficulty:{" "}
-									{cardStats.difficulty}/10
-								</div>
-								<div
-									style={{ fontSize: "0.9em", opacity: 0.8 }}
-								>
-									Reviews: {cardStats.reps} | Forgotten:{" "}
-									{cardStats.lapses}
-								</div>
-							</div>
-						</details>
-					)}
 				</>
 			)}
 
-			{/* Status message when NOT reviewing */}
-			{!showDifficultyButtons && status && (
+			{/* Status message */}
+			{status && (
 				<div
 					style={{
 						marginTop: "10px",
@@ -357,18 +300,77 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 				</div>
 			)}
 
-			{/* Show Queue button - debug feature, kept at bottom */}
-			<button
+			{/* Collapsible Debug section */}
+			<details
 				style={{
 					marginTop: "20px",
-					width: "100%",
-					fontSize: "0.9em",
-					opacity: "0.7",
+					fontSize: "0.85em",
+					opacity: 0.7,
 				}}
-				onClick={onShowQueue}
 			>
-				Show Queue (debug)
-			</button>
+				<summary
+					style={{
+						cursor: "pointer",
+						marginBottom: "8px",
+						fontSize: "0.9em",
+					}}
+				>
+					Debug
+				</summary>
+				<div
+					style={{
+						padding: "10px",
+						backgroundColor: "var(--background-secondary)",
+						borderRadius: "5px",
+					}}
+				>
+					{/* Current note */}
+					<div style={{ marginBottom: "8px" }}>
+						<strong>Current note:</strong>{" "}
+						{currentNoteName || "(no active note)"}
+					</div>
+
+					{/* Total in queue */}
+					<div style={{ marginBottom: "8px" }}>
+						<strong>Total in queue:</strong> {totalCount}
+					</div>
+
+					{/* Show Queue button */}
+					<button
+						style={{
+							width: "100%",
+							fontSize: "0.9em",
+						}}
+						onClick={onShowQueue}
+					>
+						Show Queue File
+					</button>
+
+					{/* Card Statistics (if available) */}
+					{cardStats && (
+						<div
+							style={{
+								marginTop: "10px",
+								paddingTop: "10px",
+								borderTop:
+									"1px solid var(--background-modifier-border)",
+							}}
+						>
+							<div style={{ marginBottom: "4px" }}>
+								<strong>Card Stats:</strong>
+							</div>
+							<div style={{ marginBottom: "2px" }}>
+								Memory: {cardStats.stability}d | Difficulty:{" "}
+								{cardStats.difficulty}/10
+							</div>
+							<div style={{ fontSize: "0.9em", opacity: 0.8 }}>
+								Reviews: {cardStats.reps} | Forgotten:{" "}
+								{cardStats.lapses}
+							</div>
+						</div>
+					)}
+				</div>
+			</details>
 		</div>
 	);
 };

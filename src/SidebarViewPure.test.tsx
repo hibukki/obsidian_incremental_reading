@@ -22,7 +22,7 @@ describe("SidebarViewPure", () => {
 			const props: SidebarViewPureProps = {
 				dueCount: 5,
 				totalCount: 25,
-				status: "How was this note? (Use commands or click below)",
+				status: "",
 				statusHappy: false,
 				showDifficultyButtons: true,
 				cardStats: {
@@ -41,6 +41,7 @@ describe("SidebarViewPure", () => {
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: true,
 				currentNoteName: "test-note",
+				currentNoteDueDate: new Date(Date.now() - 3600000), // Due 1 hour ago
 				...mockHandlers,
 			};
 
@@ -60,6 +61,7 @@ describe("SidebarViewPure", () => {
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: false,
 				currentNoteName: "test-note",
+				currentNoteDueDate: null,
 				...mockHandlers,
 			};
 
@@ -81,6 +83,7 @@ describe("SidebarViewPure", () => {
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: false,
 				currentNoteName: null,
+				currentNoteDueDate: null,
 				...mockHandlers,
 			};
 
@@ -100,6 +103,7 @@ describe("SidebarViewPure", () => {
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: false,
 				currentNoteName: "test-note",
+				currentNoteDueDate: null,
 				...mockHandlers,
 			};
 
@@ -119,6 +123,7 @@ describe("SidebarViewPure", () => {
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: true,
 				currentNoteName: "queued-note",
+				currentNoteDueDate: new Date(Date.now() + 86400000 * 5), // Due in 5 days
 				...mockHandlers,
 			};
 
@@ -138,6 +143,7 @@ describe("SidebarViewPure", () => {
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: false,
 				currentNoteName: "not-queued-note",
+				currentNoteDueDate: null,
 				...mockHandlers,
 			};
 
