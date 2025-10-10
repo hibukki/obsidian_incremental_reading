@@ -6,6 +6,7 @@ import {
 	CardStats,
 	IntervalPreviews,
 	DEFAULT_PRIORITY,
+	Priority,
 } from "./types";
 import { fsrs, createEmptyCard, Rating, Card } from "ts-fsrs";
 
@@ -319,7 +320,7 @@ export class QueueManager {
 	/**
 	 * Update the priority of a note in the queue.
 	 */
-	async updatePriority(path: string, priority: number): Promise<boolean> {
+	async updatePriority(path: string, priority: Priority): Promise<boolean> {
 		const queue = await this.loadQueue();
 		const noteIndex = queue.notes.findIndex((n) => n.path === path);
 

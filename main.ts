@@ -160,6 +160,30 @@ export default class IncrementalReadingPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: "set-priority-high",
+			name: "Set Priority to High",
+			callback: () => {
+				this.setPriority(Priority.High);
+			},
+		});
+
+		this.addCommand({
+			id: "set-priority-normal",
+			name: "Set Priority to Normal",
+			callback: () => {
+				this.setPriority(Priority.Normal);
+			},
+		});
+
+		this.addCommand({
+			id: "set-priority-low",
+			name: "Set Priority to Low",
+			callback: () => {
+				this.setPriority(Priority.Low);
+			},
+		});
+
 		// Optionally activate view on startup
 		this.app.workspace.onLayoutReady(() => {
 			this.activateView();
@@ -309,15 +333,20 @@ export default class IncrementalReadingPlugin extends Plugin {
 			return;
 		}
 
+		const notePath = this.currentNoteInReview;
+
 		const success = await this.queueManager.updatePriority(
-			this.currentNoteInReview,
+			notePath,
 			priority,
 		);
 
 		if (success) {
-			// Update UI to show new priority
-			if (this.onPriorityChanged) {
-				this.onPriorityChanged(priority);
+			// Reload the note data from queue.md (source of truth)
+			const queue = await this.queueManager.loadQueue(false);
+			const noteEntry = queue.notes.find((n) => n.path === notePath);
+
+			if (noteEntry && this.onPriorityChanged) {
+				this.onPriorityChanged(noteEntry.priority ?? Priority.Normal);
 			}
 
 			const priorityLabel =

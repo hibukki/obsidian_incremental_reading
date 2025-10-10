@@ -45,18 +45,6 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 	onMarkEasy,
 	onSetPriority,
 }) => {
-	const getPriorityLabel = (priority: Priority): string => {
-		switch (priority) {
-			case Priority.High:
-				return "High";
-			case Priority.Normal:
-				return "Normal";
-			case Priority.Low:
-				return "Low";
-			default:
-				return "Normal";
-		}
-	};
 	return (
 		<div>
 			<h4>Incremental Reading</h4>
