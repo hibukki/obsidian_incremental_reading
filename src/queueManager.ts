@@ -5,6 +5,7 @@ import {
 	LegacyNoteEntry,
 	CardStats,
 	IntervalPreviews,
+	DEFAULT_PRIORITY,
 } from "./types";
 import { fsrs, createEmptyCard, Rating, Card } from "ts-fsrs";
 
@@ -71,10 +72,15 @@ export class QueueManager {
 
 	/**
 	 * Migrate legacy note format to FSRS format if needed.
+	 * Also ensures priority field exists with default value.
 	 */
 	private migrateNoteIfNeeded(note: NoteEntry | LegacyNoteEntry): NoteEntry {
 		// Check if it's already in new format (has fsrsCard)
 		if ("fsrsCard" in note) {
+			// Ensure priority field exists
+			if (note.priority === undefined) {
+				note.priority = DEFAULT_PRIORITY;
+			}
 			return note;
 		}
 
@@ -87,6 +93,7 @@ export class QueueManager {
 		return {
 			path: note.path,
 			fsrsCard: card,
+			priority: DEFAULT_PRIORITY,
 		};
 	}
 
@@ -198,6 +205,7 @@ export class QueueManager {
 		queue.notes.push({
 			path,
 			fsrsCard: card,
+			priority: DEFAULT_PRIORITY,
 		});
 
 		await this.saveQueue(queue);
@@ -304,6 +312,22 @@ export class QueueManager {
 		// For now, we'll keep the logs for history
 		// note.reviewLogs = [];
 
+		await this.saveQueue(queue);
+		return true;
+	}
+
+	/**
+	 * Update the priority of a note in the queue.
+	 */
+	async updatePriority(path: string, priority: number): Promise<boolean> {
+		const queue = await this.loadQueue();
+		const noteIndex = queue.notes.findIndex((n) => n.path === path);
+
+		if (noteIndex < 0) {
+			return false;
+		}
+
+		queue.notes[noteIndex].priority = priority;
 		await this.saveQueue(queue);
 		return true;
 	}

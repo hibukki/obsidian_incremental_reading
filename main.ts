@@ -5,7 +5,7 @@ import { Root, createRoot } from "react-dom/client";
 import { SidebarView } from "./src/SidebarView";
 import React from "react";
 import { Rating, Card } from "ts-fsrs";
-import { CardStats, IntervalPreviews } from "./src/types";
+import { CardStats, IntervalPreviews, Priority } from "./src/types";
 
 const VIEW_TYPE_INCREMENTAL = "incremental-reading-view";
 
@@ -71,6 +71,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 		stats: CardStats,
 		intervals: IntervalPreviews,
 	) => void;
+	onPriorityChanged?: (priority: Priority) => void;
 
 	async onload() {
 		await this.loadSettings();
@@ -223,6 +224,11 @@ export default class IncrementalReadingPlugin extends Plugin {
 				this.onCardStatsChanged(stats, intervals);
 			}
 
+			// Send priority to UI
+			if (this.onPriorityChanged) {
+				this.onPriorityChanged(noteEntry.priority ?? Priority.Normal);
+			}
+
 			if (this.onShowDifficultyPrompt) {
 				this.onShowDifficultyPrompt();
 			}
@@ -294,6 +300,35 @@ export default class IncrementalReadingPlugin extends Plugin {
 		// Update counters
 		if (this.onCountersChanged) {
 			this.onCountersChanged();
+		}
+	}
+
+	async setPriority(priority: Priority) {
+		if (!this.currentNoteInReview) {
+			new Notice("No note currently in review");
+			return;
+		}
+
+		const success = await this.queueManager.updatePriority(
+			this.currentNoteInReview,
+			priority,
+		);
+
+		if (success) {
+			// Update UI to show new priority
+			if (this.onPriorityChanged) {
+				this.onPriorityChanged(priority);
+			}
+
+			const priorityLabel =
+				priority === Priority.High
+					? "High"
+					: priority === Priority.Low
+						? "Low"
+						: "Normal";
+			new Notice(`Priority set to ${priorityLabel}`);
+		} else {
+			new Notice("Failed to update priority");
 		}
 	}
 

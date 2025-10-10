@@ -1,6 +1,6 @@
 import React from "react";
 import { Rating } from "ts-fsrs";
-import { CardStats, IntervalPreviews } from "./types";
+import { CardStats, IntervalPreviews, Priority } from "./types";
 
 export interface SidebarViewPureProps {
 	dueNowCount: number;
@@ -11,6 +11,7 @@ export interface SidebarViewPureProps {
 	showDifficultyButtons: boolean;
 	cardStats: CardStats | null;
 	intervalPreviews: IntervalPreviews | null;
+	currentPriority: Priority | null;
 	onShowNext: () => void;
 	onAddToQueue: () => void;
 	onShowQueue: () => void;
@@ -18,6 +19,7 @@ export interface SidebarViewPureProps {
 	onMarkHard: () => void;
 	onMarkGood: () => void;
 	onMarkEasy: () => void;
+	onSetPriority: (priority: Priority) => void;
 }
 
 /**
@@ -33,6 +35,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 	showDifficultyButtons,
 	cardStats,
 	intervalPreviews,
+	currentPriority,
 	onShowNext,
 	onAddToQueue,
 	onShowQueue,
@@ -40,7 +43,20 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 	onMarkHard,
 	onMarkGood,
 	onMarkEasy,
+	onSetPriority,
 }) => {
+	const getPriorityLabel = (priority: Priority): string => {
+		switch (priority) {
+			case Priority.High:
+				return "High";
+			case Priority.Normal:
+				return "Normal";
+			case Priority.Low:
+				return "Low";
+			default:
+				return "Normal";
+		}
+	};
 	return (
 		<div>
 			<h4>Incremental Reading</h4>
@@ -79,6 +95,101 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 			>
 				Add Current Note to Queue
 			</button>
+
+			{/* Priority selector (when reviewing) */}
+			{currentPriority !== null && (
+				<div
+					style={{
+						marginTop: "15px",
+						padding: "10px",
+						backgroundColor: "var(--background-secondary)",
+						borderRadius: "5px",
+					}}
+				>
+					<div style={{ marginBottom: "8px", fontWeight: "bold" }}>
+						Priority:
+					</div>
+					<div
+						style={{
+							display: "flex",
+							gap: "6px",
+						}}
+					>
+						<button
+							style={{
+								flex: "1",
+								padding: "6px",
+								backgroundColor:
+									currentPriority === Priority.High
+										? "var(--interactive-accent)"
+										: "var(--background-modifier-border)",
+								color:
+									currentPriority === Priority.High
+										? "var(--text-on-accent)"
+										: "var(--text-normal)",
+								border: "none",
+								borderRadius: "4px",
+								cursor: "pointer",
+								fontWeight:
+									currentPriority === Priority.High
+										? "bold"
+										: "normal",
+							}}
+							onClick={() => onSetPriority(Priority.High)}
+						>
+							High
+						</button>
+						<button
+							style={{
+								flex: "1",
+								padding: "6px",
+								backgroundColor:
+									currentPriority === Priority.Normal
+										? "var(--interactive-accent)"
+										: "var(--background-modifier-border)",
+								color:
+									currentPriority === Priority.Normal
+										? "var(--text-on-accent)"
+										: "var(--text-normal)",
+								border: "none",
+								borderRadius: "4px",
+								cursor: "pointer",
+								fontWeight:
+									currentPriority === Priority.Normal
+										? "bold"
+										: "normal",
+							}}
+							onClick={() => onSetPriority(Priority.Normal)}
+						>
+							Normal
+						</button>
+						<button
+							style={{
+								flex: "1",
+								padding: "6px",
+								backgroundColor:
+									currentPriority === Priority.Low
+										? "var(--interactive-accent)"
+										: "var(--background-modifier-border)",
+								color:
+									currentPriority === Priority.Low
+										? "var(--text-on-accent)"
+										: "var(--text-normal)",
+								border: "none",
+								borderRadius: "4px",
+								cursor: "pointer",
+								fontWeight:
+									currentPriority === Priority.Low
+										? "bold"
+										: "normal",
+							}}
+							onClick={() => onSetPriority(Priority.Low)}
+						>
+							Low
+						</button>
+					</div>
+				</div>
+			)}
 
 			{/* Card Statistics (when reviewing) */}
 			{cardStats && (
@@ -141,7 +252,9 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						<button style={{ flex: "1" }} onClick={onMarkAgain}>
 							Again
 							{intervalPreviews && (
-								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+								<div
+									style={{ fontSize: "0.75em", opacity: 0.7 }}
+								>
 									{intervalPreviews[Rating.Again]}
 								</div>
 							)}
@@ -149,7 +262,9 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						<button style={{ flex: "1" }} onClick={onMarkHard}>
 							Hard
 							{intervalPreviews && (
-								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+								<div
+									style={{ fontSize: "0.75em", opacity: 0.7 }}
+								>
 									{intervalPreviews[Rating.Hard]}
 								</div>
 							)}
@@ -161,7 +276,9 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						>
 							Good
 							{intervalPreviews && (
-								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+								<div
+									style={{ fontSize: "0.75em", opacity: 0.7 }}
+								>
 									{intervalPreviews[Rating.Good]}
 								</div>
 							)}
@@ -169,7 +286,9 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						<button style={{ flex: "1" }} onClick={onMarkEasy}>
 							Easy
 							{intervalPreviews && (
-								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+								<div
+									style={{ fontSize: "0.75em", opacity: 0.7 }}
+								>
 									{intervalPreviews[Rating.Easy]}
 								</div>
 							)}
