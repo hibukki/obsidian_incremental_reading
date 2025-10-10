@@ -111,7 +111,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			plugin.onCountersChanged = undefined;
 			plugin.onCardStatsChanged = undefined;
 			plugin.onPriorityChanged = undefined;
-			app.workspace.offref(activeFileChangeHandler);
+			app.workspace.off("active-leaf-change", activeFileChangeHandler);
 			clearInterval(refreshInterval);
 		};
 	}, [plugin, app]);

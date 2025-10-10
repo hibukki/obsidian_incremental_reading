@@ -105,35 +105,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 			{/* When reviewing: Show difficulty buttons prominently at top */}
 			{showDifficultyButtons && (
 				<>
-					{/* Status message */}
-					<div
-						style={{
-							marginBottom: "10px",
-							padding: "10px",
-							textAlign: "center",
-							color: statusHappy
-								? "var(--text-success)"
-								: "var(--text-normal)",
-						}}
-					>
-						{status}
-					</div>
-
-					{/* Next review intervals preview */}
-					{intervalPreviews && (
-						<div
-							style={{
-								marginBottom: "5px",
-								fontSize: "0.85em",
-								opacity: 0.7,
-								textAlign: "center",
-							}}
-						>
-							Next review intervals:
-						</div>
-					)}
-
-					{/* Difficulty buttons - primary action during review */}
+					{/* Difficulty buttons - primary action, minimal text */}
 					<div
 						style={{
 							display: "grid",
@@ -188,32 +160,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						</button>
 					</div>
 
-					{/* Card Statistics - shown during review for context */}
-					{cardStats && (
-						<div
-							style={{
-								marginBottom: "15px",
-								padding: "10px",
-								backgroundColor: "var(--background-secondary)",
-								borderRadius: "5px",
-								fontSize: "0.9em",
-							}}
-						>
-							<div style={{ marginBottom: "3px" }}>
-								<strong>Card Stats:</strong>
-							</div>
-							<div style={{ marginBottom: "2px" }}>
-								Memory: {cardStats.stability}d | Difficulty:{" "}
-								{cardStats.difficulty}/10
-							</div>
-							<div style={{ fontSize: "0.85em", opacity: 0.8 }}>
-								Reviews: {cardStats.reps} | Forgotten:{" "}
-								{cardStats.lapses}
-							</div>
-						</div>
-					)}
-
-					{/* Priority selector - moved down, less prominent (rare action) */}
+					{/* Priority selector - secondary action */}
 					{currentPriority !== null && (
 						<div
 							style={{
@@ -314,6 +261,63 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 								</button>
 							</div>
 						</div>
+					)}
+
+					{/* Status message */}
+					{status && (
+						<div
+							style={{
+								marginBottom: "10px",
+								padding: "8px",
+								textAlign: "center",
+								fontSize: "0.9em",
+								color: statusHappy
+									? "var(--text-success)"
+									: "var(--text-normal)",
+							}}
+						>
+							{status}
+						</div>
+					)}
+
+					{/* Debug section: Card Statistics */}
+					{cardStats && (
+						<details
+							style={{
+								marginTop: "20px",
+								fontSize: "0.85em",
+								opacity: 0.7,
+							}}
+						>
+							<summary
+								style={{
+									cursor: "pointer",
+									marginBottom: "8px",
+									fontSize: "0.9em",
+								}}
+							>
+								Debug: Card Stats
+							</summary>
+							<div
+								style={{
+									padding: "10px",
+									backgroundColor:
+										"var(--background-secondary)",
+									borderRadius: "5px",
+								}}
+							>
+								<div style={{ marginBottom: "2px" }}>
+									Memory: {cardStats.stability}d | Difficulty:{" "}
+									{cardStats.difficulty}/10
+								</div>
+								<div
+									style={{ fontSize: "0.9em", opacity: 0.8 }}
+								>
+									Reviews: {cardStats.reps} | Forgotten:{" "}
+									{cardStats.lapses}
+								</div>
+							</div>
+						</details>
 					)}
 				</>
 			)}
