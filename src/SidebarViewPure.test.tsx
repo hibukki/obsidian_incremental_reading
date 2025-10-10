@@ -40,6 +40,7 @@ describe("SidebarViewPure", () => {
 				},
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: true,
+				currentNoteName: "test-note",
 				...mockHandlers,
 			};
 
@@ -58,6 +59,7 @@ describe("SidebarViewPure", () => {
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: false,
+				currentNoteName: "test-note",
 				...mockHandlers,
 			};
 
@@ -78,6 +80,7 @@ describe("SidebarViewPure", () => {
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: false,
+				currentNoteName: null,
 				...mockHandlers,
 			};
 
@@ -96,6 +99,7 @@ describe("SidebarViewPure", () => {
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: false,
+				currentNoteName: "test-note",
 				...mockHandlers,
 			};
 
@@ -114,6 +118,7 @@ describe("SidebarViewPure", () => {
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: true,
+				currentNoteName: "queued-note",
 				...mockHandlers,
 			};
 
@@ -132,6 +137,7 @@ describe("SidebarViewPure", () => {
 				intervalPreviews: null,
 				currentPriority: Priority.Normal,
 				isCurrentNoteInQueue: false,
+				currentNoteName: "not-queued-note",
 				...mockHandlers,
 			};
 

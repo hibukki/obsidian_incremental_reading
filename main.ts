@@ -59,19 +59,10 @@ class IncrementalReadingView extends ItemView {
 export default class IncrementalReadingPlugin extends Plugin {
 	settings: IncrementalReadingSettings;
 	queueManager: QueueManager;
-	currentNoteInReview: string | null = null;
-	currentNoteCard: Card | null = null; // Store current card for stats/preview
 
 	// Callbacks for React to hook into
 	onUpdateUI?: (message: string, isHappy: boolean) => void;
-	onShowDifficultyPrompt?: () => void;
-	onHideDifficultyPrompt?: () => void;
 	onCountersChanged?: () => void;
-	onCardStatsChanged?: (
-		stats: CardStats,
-		intervals: IntervalPreviews,
-	) => void;
-	onPriorityChanged?: (priority: Priority) => void;
 
 	async onload() {
 		await this.loadSettings();
@@ -213,64 +204,38 @@ export default class IncrementalReadingPlugin extends Plugin {
 		if (!nextPath) {
 			this.updateStatus("🎉 Done for today! All caught up!", true);
 			new Notice("🎉 Done for today!");
-			this.currentNoteInReview = null;
-			this.currentNoteCard = null;
-			if (this.onHideDifficultyPrompt) {
-				this.onHideDifficultyPrompt();
-			}
 			return;
 		}
 
-		// Find the note entry to get its card
-		const noteEntry = dueNotes.find((n) => n.path === nextPath);
-
-		if (!noteEntry) {
-			new Notice(`Error: Note ${nextPath} not found in due notes`);
-			this.updateStatus("Error loading note", false);
-			return;
-		}
-
-		// Open the note
+		// Open the note - the sidebar will automatically detect it's in the queue
+		// and show the difficulty buttons
 		const file = this.app.vault.getAbstractFileByPath(nextPath);
 		if (file instanceof TFile) {
 			await this.app.workspace.getLeaf(false).openFile(file);
-			this.currentNoteInReview = nextPath;
-			this.currentNoteCard = noteEntry.fsrsCard;
-
-			// Send card stats and interval previews to UI
-			if (this.currentNoteCard && this.onCardStatsChanged) {
-				const stats = this.queueManager.getCardStats(
-					this.currentNoteCard,
-				);
-				const intervals = this.queueManager.previewIntervals(
-					this.currentNoteCard,
-				);
-				this.onCardStatsChanged(stats, intervals);
-			}
-
-			// Send priority to UI
-			if (this.onPriorityChanged) {
-				this.onPriorityChanged(noteEntry.priority ?? Priority.Normal);
-			}
-
-			if (this.onShowDifficultyPrompt) {
-				this.onShowDifficultyPrompt();
-			}
 		} else {
 			new Notice(`Could not open note: ${nextPath}`);
-			this.currentNoteInReview = null;
-			this.currentNoteCard = null;
 		}
 	}
 
 	async markRating(rating: Rating) {
-		if (!this.currentNoteInReview) {
-			new Notice("No note currently in review");
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new Notice("No active note");
+			return;
+		}
+
+		// Check if the active file is in the queue
+		const inQueue = await this.queueManager.isNoteInQueue(
+			activeFile.path,
+			false,
+		);
+		if (!inQueue) {
+			new Notice("Current note is not in the queue");
 			return;
 		}
 
 		const nextDue = await this.queueManager.scheduleNext(
-			this.currentNoteInReview,
+			activeFile.path,
 			rating,
 		);
 
@@ -295,14 +260,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 		new Notice(message);
 		this.updateStatus(message);
 
-		this.currentNoteInReview = null;
-
-		// Hide difficulty buttons
-		if (this.onHideDifficultyPrompt) {
-			this.onHideDifficultyPrompt();
-		}
-
-		// Update counters
+		// Update counters - this will trigger the sidebar to recheck if the current note is in queue
 		if (this.onCountersChanged) {
 			this.onCountersChanged();
 		}
@@ -328,12 +286,23 @@ export default class IncrementalReadingPlugin extends Plugin {
 	}
 
 	async setPriority(priority: Priority) {
-		if (!this.currentNoteInReview) {
-			new Notice("No note currently in review");
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new Notice("No active note");
 			return;
 		}
 
-		const notePath = this.currentNoteInReview;
+		// Check if the active file is in the queue
+		const inQueue = await this.queueManager.isNoteInQueue(
+			activeFile.path,
+			false,
+		);
+		if (!inQueue) {
+			new Notice("Current note is not in the queue");
+			return;
+		}
+
+		const notePath = activeFile.path;
 
 		const success = await this.queueManager.updatePriority(
 			notePath,
@@ -341,14 +310,6 @@ export default class IncrementalReadingPlugin extends Plugin {
 		);
 
 		if (success) {
-			// Reload the note data from queue.md (source of truth)
-			const queue = await this.queueManager.loadQueue(false);
-			const noteEntry = queue.notes.find((n) => n.path === notePath);
-
-			if (noteEntry && this.onPriorityChanged) {
-				this.onPriorityChanged(noteEntry.priority ?? Priority.Normal);
-			}
-
 			const priorityLabel =
 				priority === Priority.High
 					? "High"
@@ -356,6 +317,11 @@ export default class IncrementalReadingPlugin extends Plugin {
 						? "Low"
 						: "Normal";
 			new Notice(`Priority set to ${priorityLabel}`);
+
+			// Update counters - this will trigger the sidebar to reload note data
+			if (this.onCountersChanged) {
+				this.onCountersChanged();
+			}
 		} else {
 			new Notice("Failed to update priority");
 		}

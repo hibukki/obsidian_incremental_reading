@@ -29,6 +29,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	);
 	const [isCurrentNoteInQueue, setIsCurrentNoteInQueue] =
 		useState<boolean>(false);
+	const [currentNoteName, setCurrentNoteName] = useState<string | null>(null);
 
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
@@ -41,13 +42,46 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 		const activeFile = app.workspace.getActiveFile();
 		if (!activeFile) {
 			setIsCurrentNoteInQueue(false);
+			setCurrentNoteName(null);
+			setShowDifficultyButtons(false);
+			setCardStats(null);
+			setIntervalPreviews(null);
+			setCurrentPriority(null);
 			return;
 		}
+		setCurrentNoteName(activeFile.basename);
 		const inQueue = await plugin.queueManager.isNoteInQueue(
 			activeFile.path,
 			true,
 		);
 		setIsCurrentNoteInQueue(inQueue);
+
+		// If the note is in the queue, load its card data and show difficulty buttons
+		if (inQueue) {
+			const queue = await plugin.queueManager.loadQueue(true);
+			const noteData = queue.notes.find(
+				(n) => n.path === activeFile.path,
+			);
+			if (noteData) {
+				const stats = plugin.queueManager.getCardStats(
+					noteData.fsrsCard,
+				);
+				const intervals = plugin.queueManager.previewIntervals(
+					noteData.fsrsCard,
+				);
+				setCardStats(stats);
+				setIntervalPreviews(intervals);
+				setCurrentPriority(noteData.priority ?? null);
+				setShowDifficultyButtons(true);
+				setStatus("How was this note? (Use commands or click below)");
+			}
+		} else {
+			// Not in queue, hide difficulty buttons
+			setShowDifficultyButtons(false);
+			setCardStats(null);
+			setIntervalPreviews(null);
+			setCurrentPriority(null);
+		}
 	};
 
 	useEffect(() => {
@@ -60,33 +94,9 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			setStatusHappy(isHappy);
 		};
 
-		plugin.onShowDifficultyPrompt = () => {
-			setShowDifficultyButtons(true);
-			setStatus("How was this note? (Use commands or click below)");
-		};
-
-		plugin.onHideDifficultyPrompt = () => {
-			setShowDifficultyButtons(false);
-			setCardStats(null);
-			setIntervalPreviews(null);
-			setCurrentPriority(null);
-		};
-
 		plugin.onCountersChanged = () => {
 			updateCounters();
 			checkIfCurrentNoteInQueue(); // Queue changed, recheck current note
-		};
-
-		plugin.onCardStatsChanged = (
-			stats: CardStats,
-			intervals: IntervalPreviews,
-		) => {
-			setCardStats(stats);
-			setIntervalPreviews(intervals);
-		};
-
-		plugin.onPriorityChanged = (priority: Priority) => {
-			setCurrentPriority(priority);
 		};
 
 		// Listen for active file changes
@@ -106,12 +116,8 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 
 		return () => {
 			plugin.onUpdateUI = undefined;
-			plugin.onShowDifficultyPrompt = undefined;
-			plugin.onHideDifficultyPrompt = undefined;
 			plugin.onCountersChanged = undefined;
-			plugin.onCardStatsChanged = undefined;
-			plugin.onPriorityChanged = undefined;
-			app.workspace.off("active-leaf-change", activeFileChangeHandler);
+			app.workspace.offref(activeFileChangeHandler);
 			clearInterval(refreshInterval);
 		};
 	}, [plugin, app]);
@@ -159,6 +165,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			intervalPreviews={intervalPreviews}
 			currentPriority={currentPriority}
 			isCurrentNoteInQueue={isCurrentNoteInQueue}
+			currentNoteName={currentNoteName}
 			onShowNext={handleShowNext}
 			onAddToQueue={handleAddToQueue}
 			onShowQueue={handleShowQueue}

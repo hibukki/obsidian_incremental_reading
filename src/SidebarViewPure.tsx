@@ -12,6 +12,7 @@ export interface SidebarViewPureProps {
 	intervalPreviews: IntervalPreviews | null;
 	currentPriority: Priority | null;
 	isCurrentNoteInQueue: boolean;
+	currentNoteName: string | null;
 	onShowNext: () => void;
 	onAddToQueue: () => void;
 	onShowQueue: () => void;
@@ -36,6 +37,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 	intervalPreviews,
 	currentPriority,
 	isCurrentNoteInQueue,
+	currentNoteName,
 	onShowNext,
 	onAddToQueue,
 	onShowQueue,
@@ -60,6 +62,23 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 			>
 				<div style={{ marginBottom: "5px" }}>Due: {dueCount}</div>
 				<div>Total in queue: {totalCount}</div>
+			</div>
+
+			{/* Debug: Current note name */}
+			<div
+				style={{
+					marginBottom: "15px",
+					padding: "8px",
+					backgroundColor: "var(--background-secondary)",
+					borderRadius: "5px",
+					fontSize: "0.85em",
+					opacity: 0.7,
+				}}
+			>
+				<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+					Debug - Current note:
+				</div>
+				<div>{currentNoteName || "(no active note)"}</div>
 			</div>
 
 			{/* When NOT reviewing: Show queue management actions */}

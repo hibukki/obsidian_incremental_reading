@@ -8,7 +8,7 @@ const createMockWorkspace = () => {
 	const listeners = new Map<string, Function[]>();
 
 	return {
-		getActiveFile: jest.fn(() => null),
+		getActiveFile: jest.fn(),
 		on: jest.fn((event: string, callback: Function) => {
 			if (!listeners.has(event)) {
 				listeners.set(event, []);
@@ -16,14 +16,14 @@ const createMockWorkspace = () => {
 			listeners.get(event)?.push(callback);
 			return callback; // Return the callback as the event reference
 		}),
-		off: jest.fn((event: string, callback: Function) => {
-			const eventListeners = listeners.get(event);
-			if (eventListeners) {
-				const index = eventListeners.indexOf(callback);
+		offref: jest.fn((eventRef: Function) => {
+			// In tests, the eventRef is the callback itself
+			listeners.forEach((eventListeners) => {
+				const index = eventListeners.indexOf(eventRef);
 				if (index > -1) {
 					eventListeners.splice(index, 1);
 				}
-			}
+			});
 		}),
 		// Helper to trigger events in tests
 		trigger: (event: string) => {
@@ -47,13 +47,12 @@ const createMockPlugin = () => ({
 	queueManager: {
 		getQueueStats: jest.fn().mockResolvedValue({ due: 0, total: 0 }),
 		isNoteInQueue: jest.fn().mockResolvedValue(false),
+		loadQueue: jest.fn().mockResolvedValue({ notes: [] }),
+		getCardStats: jest.fn(),
+		previewIntervals: jest.fn(),
 	},
 	onUpdateUI: undefined,
-	onShowDifficultyPrompt: undefined,
-	onHideDifficultyPrompt: undefined,
 	onCountersChanged: undefined,
-	onCardStatsChanged: undefined,
-	onPriorityChanged: undefined,
 });
 
 describe("SidebarView - Integration Tests", () => {
@@ -129,11 +128,8 @@ describe("SidebarView - Integration Tests", () => {
 		// Unmount the component
 		unmount();
 
-		// Verify that workspace.off was called with the correct event and callback
-		expect(mockWorkspace.off).toHaveBeenCalledWith(
-			"active-leaf-change",
-			registeredCallback,
-		);
+		// Verify that workspace.offref was called with the registered callback
+		expect(mockWorkspace.offref).toHaveBeenCalledWith(registeredCallback);
 	});
 
 	test("handles case when no active file exists", async () => {
