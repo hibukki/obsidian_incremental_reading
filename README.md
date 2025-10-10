@@ -54,6 +54,15 @@ npm run lint
 
 Try to use features from [ts-fsrs](https://github.com/open-spaced-repetition/ts-fsrs) when possible, including using their recommendations and defaults. It is a well respected library, so if we can conform to their standards, let's do it.
 
+### Performance
+
+TL;DR: Maintainability is more important than performance.
+
+Specifically, we assume for now:
+
+1. Not too many notes (so it's ok to go over all of them to look for the next high priority one. Simpler than e.g a heap)
+2. The obsidian notes are local files, access is very fast (so we can use them as the source of truth and not rely on cache)
+
 ## License
 
 MIT
