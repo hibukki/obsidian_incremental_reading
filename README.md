@@ -1,5 +1,7 @@
 # Incremental Reading Obsidian Plugin
 
+Any Obsidian note can be added to the Incremental Reading queue. A sidebar helps add/read notes.
+
 ## Screenshot
 
 <img width="1121" height="585" alt="image" src="https://github.com/user-attachments/assets/ffba8260-ccdf-43be-89c5-95b0b75c9706" />
@@ -35,6 +37,22 @@ npm run dev:link --vault=/path/to/your/vault
 ```sh
 npm run build
 ```
+
+### Test
+
+```sh
+npm run test
+```
+
+### Lint
+
+```sh
+npm run lint
+```
+
+## Philosophy
+
+Try to use features from [ts-fsrs](https://github.com/open-spaced-repetition/ts-fsrs) when possible, including using their recommendations and defaults. It is a well respected library, so if we can conform to their standards, let's do it.
 
 ## License
 
