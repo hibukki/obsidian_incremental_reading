@@ -2,9 +2,12 @@
 
 Any Obsidian note can be added to the Incremental Reading queue. A sidebar helps add/read notes.
 
-## Screenshot
+## Screenshots
 
-<img width="1121" height="585" alt="image" src="https://github.com/user-attachments/assets/ffba8260-ccdf-43be-89c5-95b0b75c9706" />
+<img width="1124" height="347" alt="image" src="https://github.com/user-attachments/assets/135c5ede-729d-4984-9175-ee4898aa7bb5" />
+
+<img width="1118" height="204" alt="image" src="https://github.com/user-attachments/assets/19fa2f74-209a-499c-ba15-95e326d3579d" />
+
 
 (The screenshot might not be up to date)
 
