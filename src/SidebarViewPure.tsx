@@ -3,8 +3,7 @@ import { Rating } from "ts-fsrs";
 import { CardStats, IntervalPreviews } from "./types";
 
 export interface SidebarViewPureProps {
-	dueNowCount: number;
-	dueTodayCount: number;
+	dueCount: number;
 	totalCount: number;
 	status: string;
 	statusHappy: boolean;
@@ -25,8 +24,7 @@ export interface SidebarViewPureProps {
  * All data comes from props, making it easy to test.
  */
 export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
-	dueNowCount,
-	dueTodayCount,
+	dueCount,
 	totalCount,
 	status,
 	statusHappy,
@@ -54,18 +52,13 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 					borderRadius: "5px",
 				}}
 			>
-				<div style={{ marginBottom: "5px" }}>
-					Due now: {dueNowCount}
-				</div>
-				<div style={{ marginBottom: "5px" }}>
-					Due today: {dueTodayCount}
-				</div>
+				<div style={{ marginBottom: "5px" }}>Due: {dueCount}</div>
 				<div>Total in queue: {totalCount}</div>
 			</div>
 
 			{/* Show Next button - primary only when there are notes to show */}
 			<button
-				className={dueNowCount > 0 ? "mod-cta" : ""}
+				className={dueCount > 0 ? "mod-cta" : ""}
 				style={{ marginBottom: "10px", width: "100%" }}
 				onClick={onShowNext}
 			>
@@ -141,7 +134,9 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						<button style={{ flex: "1" }} onClick={onMarkAgain}>
 							Again
 							{intervalPreviews && (
-								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+								<div
+									style={{ fontSize: "0.75em", opacity: 0.7 }}
+								>
 									{intervalPreviews[Rating.Again]}
 								</div>
 							)}
@@ -149,7 +144,9 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						<button style={{ flex: "1" }} onClick={onMarkHard}>
 							Hard
 							{intervalPreviews && (
-								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+								<div
+									style={{ fontSize: "0.75em", opacity: 0.7 }}
+								>
 									{intervalPreviews[Rating.Hard]}
 								</div>
 							)}
@@ -161,7 +158,9 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						>
 							Good
 							{intervalPreviews && (
-								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+								<div
+									style={{ fontSize: "0.75em", opacity: 0.7 }}
+								>
 									{intervalPreviews[Rating.Good]}
 								</div>
 							)}
@@ -169,7 +168,9 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 						<button style={{ flex: "1" }} onClick={onMarkEasy}>
 							Easy
 							{intervalPreviews && (
-								<div style={{ fontSize: "0.75em", opacity: 0.7 }}>
+								<div
+									style={{ fontSize: "0.75em", opacity: 0.7 }}
+								>
 									{intervalPreviews[Rating.Easy]}
 								</div>
 							)}

@@ -18,8 +18,7 @@ describe("SidebarViewPure", () => {
 	describe("Snapshot Tests", () => {
 		test("renders correctly when there are due notes and user is reviewing one", () => {
 			const props: SidebarViewPureProps = {
-				dueNowCount: 5,
-				dueTodayCount: 12,
+				dueCount: 5,
 				totalCount: 25,
 				status: "How was this note? (Use commands or click below)",
 				statusHappy: false,
@@ -46,8 +45,7 @@ describe("SidebarViewPure", () => {
 
 		test("renders correctly when there are no notes to review", () => {
 			const props: SidebarViewPureProps = {
-				dueNowCount: 0,
-				dueTodayCount: 0,
+				dueCount: 0,
 				totalCount: 15,
 				status: "🎉 Done for today! All caught up!",
 				statusHappy: true,
@@ -65,8 +63,7 @@ describe("SidebarViewPure", () => {
 	describe("Additional Scenarios", () => {
 		test("renders correctly when there are notes due later today", () => {
 			const props: SidebarViewPureProps = {
-				dueNowCount: 0,
-				dueTodayCount: 8,
+				dueCount: 0,
 				totalCount: 20,
 				status: "",
 				statusHappy: false,
@@ -82,8 +79,7 @@ describe("SidebarViewPure", () => {
 
 		test("renders correctly with status message after rating", () => {
 			const props: SidebarViewPureProps = {
-				dueNowCount: 3,
-				dueTodayCount: 7,
+				dueCount: 3,
 				totalCount: 18,
 				status: "Scheduled for 2 hours",
 				statusHappy: false,
