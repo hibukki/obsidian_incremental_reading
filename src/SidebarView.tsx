@@ -4,6 +4,7 @@ import IncrementalReadingPlugin from "../main";
 import { Rating } from "ts-fsrs";
 import { SidebarViewPure } from "./SidebarViewPure";
 import { CardStats, IntervalPreviews, Priority } from "./types";
+import { selectNextNote } from "./nextNoteSelector";
 
 interface SidebarViewProps {
 	app: App;
@@ -33,6 +34,8 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const [currentNoteDueDate, setCurrentNoteDueDate] = useState<Date | null>(
 		null,
 	);
+	const [isCurrentNoteTheNextNote, setIsCurrentNoteTheNextNote] =
+		useState<boolean>(false);
 
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
@@ -51,6 +54,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			setCardStats(null);
 			setIntervalPreviews(null);
 			setCurrentPriority(null);
+			setIsCurrentNoteTheNextNote(false);
 			return;
 		}
 		setCurrentNoteName(activeFile.basename);
@@ -59,6 +63,13 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			true,
 		);
 		setIsCurrentNoteInQueue(inQueue);
+
+		// Check if the current note is the next note
+		const dueNotes = await plugin.queueManager.getDueNotes(true);
+		const nextNotePath = selectNextNote(dueNotes);
+		setIsCurrentNoteTheNextNote(
+			nextNotePath !== null && nextNotePath === activeFile.path,
+		);
 
 		// If the note is in the queue, load its card data
 		if (inQueue) {
@@ -177,6 +188,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			isCurrentNoteInQueue={isCurrentNoteInQueue}
 			currentNoteName={currentNoteName}
 			currentNoteDueDate={currentNoteDueDate}
+			isCurrentNoteTheNextNote={isCurrentNoteTheNextNote}
 			onShowNext={handleShowNext}
 			onAddToQueue={handleAddToQueue}
 			onShowQueue={handleShowQueue}

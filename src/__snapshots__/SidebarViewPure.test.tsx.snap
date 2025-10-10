@@ -15,7 +15,8 @@ exports[`SidebarViewPure Additional Scenarios renders correctly when current not
     <div
       style="margin-bottom: 10px; padding: 10px; border-radius: 5px; text-align: center; opacity: 0.8;"
     >
-      Note in queue (due in 
+      Note in queue (due in
+       
       5 days
       )
     </div>
@@ -243,6 +244,7 @@ exports[`SidebarViewPure Snapshot Tests renders correctly when there are due not
     </h4>
     <button
       class="mod-cta"
+      disabled=""
       style="margin-bottom: 10px; width: 100%;"
     >
       Show next (5 left)

@@ -42,6 +42,7 @@ describe("SidebarViewPure", () => {
 				isCurrentNoteInQueue: true,
 				currentNoteName: "test-note",
 				currentNoteDueDate: new Date(Date.now() - 3600000), // Due 1 hour ago
+				isCurrentNoteTheNextNote: true, // This is the next note
 				...mockHandlers,
 			};
 
@@ -62,6 +63,7 @@ describe("SidebarViewPure", () => {
 				isCurrentNoteInQueue: false,
 				currentNoteName: "test-note",
 				currentNoteDueDate: null,
+				isCurrentNoteTheNextNote: false,
 				...mockHandlers,
 			};
 
@@ -84,6 +86,7 @@ describe("SidebarViewPure", () => {
 				isCurrentNoteInQueue: false,
 				currentNoteName: null,
 				currentNoteDueDate: null,
+				isCurrentNoteTheNextNote: false,
 				...mockHandlers,
 			};
 
@@ -104,6 +107,7 @@ describe("SidebarViewPure", () => {
 				isCurrentNoteInQueue: false,
 				currentNoteName: "test-note",
 				currentNoteDueDate: null,
+				isCurrentNoteTheNextNote: false,
 				...mockHandlers,
 			};
 
@@ -124,6 +128,7 @@ describe("SidebarViewPure", () => {
 				isCurrentNoteInQueue: true,
 				currentNoteName: "queued-note",
 				currentNoteDueDate: new Date(Date.now() + 86400000 * 5), // Due in 5 days
+				isCurrentNoteTheNextNote: false,
 				...mockHandlers,
 			};
 
@@ -144,6 +149,7 @@ describe("SidebarViewPure", () => {
 				isCurrentNoteInQueue: false,
 				currentNoteName: "not-queued-note",
 				currentNoteDueDate: null,
+				isCurrentNoteTheNextNote: false,
 				...mockHandlers,
 			};
 

@@ -48,6 +48,7 @@ const createMockPlugin = () => ({
 		getQueueStats: jest.fn().mockResolvedValue({ due: 0, total: 0 }),
 		isNoteInQueue: jest.fn().mockResolvedValue(false),
 		loadQueue: jest.fn().mockResolvedValue({ notes: [] }),
+		getDueNotes: jest.fn().mockResolvedValue([]),
 		getCardStats: jest.fn(),
 		previewIntervals: jest.fn(),
 	},

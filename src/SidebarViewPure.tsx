@@ -14,6 +14,7 @@ export interface SidebarViewPureProps {
 	isCurrentNoteInQueue: boolean;
 	currentNoteName: string | null;
 	currentNoteDueDate: Date | null;
+	isCurrentNoteTheNextNote: boolean;
 	onShowNext: () => void;
 	onAddToQueue: () => void;
 	onShowQueue: () => void;
@@ -40,6 +41,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 	isCurrentNoteInQueue,
 	currentNoteName,
 	currentNoteDueDate,
+	isCurrentNoteTheNextNote,
 	onShowNext,
 	onAddToQueue,
 	onShowQueue,
@@ -74,6 +76,7 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 				className={dueCount > 0 ? "mod-cta" : ""}
 				style={{ marginBottom: "10px", width: "100%" }}
 				onClick={onShowNext}
+				disabled={isCurrentNoteTheNextNote}
 			>
 				{dueCount > 0
 					? `Show next (${dueCount} left)`
