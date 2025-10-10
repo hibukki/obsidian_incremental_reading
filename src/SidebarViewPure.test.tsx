@@ -2,6 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react";
 import { Rating, State } from "ts-fsrs";
 import { SidebarViewPure, SidebarViewPureProps } from "./SidebarViewPure";
+import { Priority } from "./types";
 
 // Mock handlers
 const mockHandlers = {
@@ -12,6 +13,7 @@ const mockHandlers = {
 	onMarkHard: jest.fn(),
 	onMarkGood: jest.fn(),
 	onMarkEasy: jest.fn(),
+	onSetPriority: jest.fn(),
 };
 
 describe("SidebarViewPure", () => {
@@ -37,6 +39,7 @@ describe("SidebarViewPure", () => {
 					[Rating.Good]: "1d",
 					[Rating.Easy]: "3d",
 				},
+				currentPriority: Priority.Normal,
 				...mockHandlers,
 			};
 
@@ -54,6 +57,7 @@ describe("SidebarViewPure", () => {
 				showDifficultyButtons: false,
 				cardStats: null,
 				intervalPreviews: null,
+				currentPriority: Priority.Normal,
 				...mockHandlers,
 			};
 
@@ -73,6 +77,7 @@ describe("SidebarViewPure", () => {
 				showDifficultyButtons: false,
 				cardStats: null,
 				intervalPreviews: null,
+				currentPriority: Priority.Normal,
 				...mockHandlers,
 			};
 
@@ -90,6 +95,7 @@ describe("SidebarViewPure", () => {
 				showDifficultyButtons: false,
 				cardStats: null,
 				intervalPreviews: null,
+				currentPriority: Priority.Normal,
 				...mockHandlers,
 			};
 

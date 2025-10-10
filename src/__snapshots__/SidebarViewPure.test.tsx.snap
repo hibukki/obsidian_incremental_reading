@@ -38,6 +38,34 @@ exports[`SidebarViewPure Additional Scenarios renders correctly when there are n
       Add Current Note to Queue
     </button>
     <div
+      style="margin-top: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 8px; font-weight: bold;"
+      >
+        Priority:
+      </div>
+      <div
+        style="display: flex; gap: 6px;"
+      >
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
+        >
+          High
+        </button>
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+        >
+          Normal
+        </button>
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
+        >
+          Low
+        </button>
+      </div>
+    </div>
+    <div
       style="margin-top: 20px; padding: 10px; text-align: center;"
     />
     <button
@@ -86,6 +114,34 @@ exports[`SidebarViewPure Additional Scenarios renders correctly with status mess
     >
       Add Current Note to Queue
     </button>
+    <div
+      style="margin-top: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 8px; font-weight: bold;"
+      >
+        Priority:
+      </div>
+      <div
+        style="display: flex; gap: 6px;"
+      >
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
+        >
+          High
+        </button>
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+        >
+          Normal
+        </button>
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
+        >
+          Low
+        </button>
+      </div>
+    </div>
     <div
       style="margin-top: 20px; padding: 10px; text-align: center;"
     >
@@ -137,6 +193,34 @@ exports[`SidebarViewPure Snapshot Tests renders correctly when there are due not
     >
       Add Current Note to Queue
     </button>
+    <div
+      style="margin-top: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 8px; font-weight: bold;"
+      >
+        Priority:
+      </div>
+      <div
+        style="display: flex; gap: 6px;"
+      >
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
+        >
+          High
+        </button>
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+        >
+          Normal
+        </button>
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
+        >
+          Low
+        </button>
+      </div>
+    </div>
     <div
       style="margin-top: 15px; padding: 10px; border-radius: 5px; font-size: 0.9em;"
     >
@@ -268,6 +352,34 @@ exports[`SidebarViewPure Snapshot Tests renders correctly when there are no note
     >
       Add Current Note to Queue
     </button>
+    <div
+      style="margin-top: 15px; padding: 10px; border-radius: 5px;"
+    >
+      <div
+        style="margin-bottom: 8px; font-weight: bold;"
+      >
+        Priority:
+      </div>
+      <div
+        style="display: flex; gap: 6px;"
+      >
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
+        >
+          High
+        </button>
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+        >
+          Normal
+        </button>
+        <button
+          style="flex: 1; padding: 6px; border-radius: 4px; cursor: pointer; font-weight: normal;"
+        >
+          Low
+        </button>
+      </div>
+    </div>
     <div
       style="margin-top: 20px; padding: 10px; text-align: center;"
     >

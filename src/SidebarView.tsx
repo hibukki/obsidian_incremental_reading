@@ -3,7 +3,7 @@ import { App } from "obsidian";
 import IncrementalReadingPlugin from "../main";
 import { Rating } from "ts-fsrs";
 import { SidebarViewPure } from "./SidebarViewPure";
-import { CardStats, IntervalPreviews } from "./types";
+import { CardStats, IntervalPreviews, Priority } from "./types";
 
 interface SidebarViewProps {
 	app: App;
@@ -25,6 +25,9 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const [cardStats, setCardStats] = useState<CardStats | null>(null);
 	const [intervalPreviews, setIntervalPreviews] =
 		useState<IntervalPreviews | null>(null);
+	const [currentPriority, setCurrentPriority] = useState<Priority | null>(
+		null,
+	);
 
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
@@ -52,6 +55,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			setShowDifficultyButtons(false);
 			setCardStats(null);
 			setIntervalPreviews(null);
+			setCurrentPriority(null);
 		};
 
 		plugin.onCountersChanged = () => {
@@ -66,6 +70,10 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			setIntervalPreviews(intervals);
 		};
 
+		plugin.onPriorityChanged = (priority: Priority) => {
+			setCurrentPriority(priority);
+		};
+
 		// Auto-refresh counters every 30 seconds
 		// (to catch notes that become due, like "Again" rated notes)
 		const refreshInterval = setInterval(() => {
@@ -78,6 +86,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			plugin.onHideDifficultyPrompt = undefined;
 			plugin.onCountersChanged = undefined;
 			plugin.onCardStatsChanged = undefined;
+			plugin.onPriorityChanged = undefined;
 			clearInterval(refreshInterval);
 		};
 	}, [plugin]);
@@ -110,6 +119,10 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 		plugin.markRating(Rating.Easy);
 	};
 
+	const handleSetPriority = (priority: Priority) => {
+		plugin.setPriority(priority);
+	};
+
 	return (
 		<SidebarViewPure
 			dueNowCount={dueNowCount}
@@ -120,6 +133,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			showDifficultyButtons={showDifficultyButtons}
 			cardStats={cardStats}
 			intervalPreviews={intervalPreviews}
+			currentPriority={currentPriority}
 			onShowNext={handleShowNext}
 			onAddToQueue={handleAddToQueue}
 			onShowQueue={handleShowQueue}
@@ -127,6 +141,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 			onMarkHard={handleMarkHard}
 			onMarkGood={handleMarkGood}
 			onMarkEasy={handleMarkEasy}
+			onSetPriority={handleSetPriority}
 		/>
 	);
 };

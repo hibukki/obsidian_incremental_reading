@@ -5,7 +5,7 @@ import { Root, createRoot } from "react-dom/client";
 import { SidebarView } from "./src/SidebarView";
 import React from "react";
 import { Rating, Card } from "ts-fsrs";
-import { CardStats, IntervalPreviews } from "./src/types";
+import { CardStats, IntervalPreviews, Priority } from "./src/types";
 
 const VIEW_TYPE_INCREMENTAL = "incremental-reading-view";
 
@@ -71,6 +71,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 		stats: CardStats,
 		intervals: IntervalPreviews,
 	) => void;
+	onPriorityChanged?: (priority: Priority) => void;
 
 	async onload() {
 		await this.loadSettings();
@@ -159,6 +160,30 @@ export default class IncrementalReadingPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: "set-priority-high",
+			name: "Set Priority to High",
+			callback: () => {
+				this.setPriority(Priority.High);
+			},
+		});
+
+		this.addCommand({
+			id: "set-priority-normal",
+			name: "Set Priority to Normal",
+			callback: () => {
+				this.setPriority(Priority.Normal);
+			},
+		});
+
+		this.addCommand({
+			id: "set-priority-low",
+			name: "Set Priority to Low",
+			callback: () => {
+				this.setPriority(Priority.Low);
+			},
+		});
+
 		// Optionally activate view on startup
 		this.app.workspace.onLayoutReady(() => {
 			this.activateView();
@@ -221,6 +246,11 @@ export default class IncrementalReadingPlugin extends Plugin {
 					this.currentNoteCard,
 				);
 				this.onCardStatsChanged(stats, intervals);
+			}
+
+			// Send priority to UI
+			if (this.onPriorityChanged) {
+				this.onPriorityChanged(noteEntry.priority ?? Priority.Normal);
 			}
 
 			if (this.onShowDifficultyPrompt) {
@@ -294,6 +324,40 @@ export default class IncrementalReadingPlugin extends Plugin {
 		// Update counters
 		if (this.onCountersChanged) {
 			this.onCountersChanged();
+		}
+	}
+
+	async setPriority(priority: Priority) {
+		if (!this.currentNoteInReview) {
+			new Notice("No note currently in review");
+			return;
+		}
+
+		const notePath = this.currentNoteInReview;
+
+		const success = await this.queueManager.updatePriority(
+			notePath,
+			priority,
+		);
+
+		if (success) {
+			// Reload the note data from queue.md (source of truth)
+			const queue = await this.queueManager.loadQueue(false);
+			const noteEntry = queue.notes.find((n) => n.path === notePath);
+
+			if (noteEntry && this.onPriorityChanged) {
+				this.onPriorityChanged(noteEntry.priority ?? Priority.Normal);
+			}
+
+			const priorityLabel =
+				priority === Priority.High
+					? "High"
+					: priority === Priority.Low
+						? "Low"
+						: "Normal";
+			new Notice(`Priority set to ${priorityLabel}`);
+		} else {
+			new Notice("Failed to update priority");
 		}
 	}
 
