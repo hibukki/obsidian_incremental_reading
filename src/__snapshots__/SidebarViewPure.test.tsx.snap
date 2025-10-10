@@ -12,14 +12,8 @@ exports[`SidebarViewPure Additional Scenarios renders correctly when there are n
       <div
         style="margin-bottom: 5px;"
       >
-        Due now: 
+        Due: 
         0
-      </div>
-      <div
-        style="margin-bottom: 5px;"
-      >
-        Due today: 
-        8
       </div>
       <div>
         Total in queue: 
@@ -89,14 +83,8 @@ exports[`SidebarViewPure Additional Scenarios renders correctly with status mess
       <div
         style="margin-bottom: 5px;"
       >
-        Due now: 
+        Due: 
         3
-      </div>
-      <div
-        style="margin-bottom: 5px;"
-      >
-        Due today: 
-        7
       </div>
       <div>
         Total in queue: 
@@ -168,14 +156,8 @@ exports[`SidebarViewPure Snapshot Tests renders correctly when there are due not
       <div
         style="margin-bottom: 5px;"
       >
-        Due now: 
+        Due: 
         5
-      </div>
-      <div
-        style="margin-bottom: 5px;"
-      >
-        Due today: 
-        12
       </div>
       <div>
         Total in queue: 
@@ -327,13 +309,7 @@ exports[`SidebarViewPure Snapshot Tests renders correctly when there are no note
       <div
         style="margin-bottom: 5px;"
       >
-        Due now: 
-        0
-      </div>
-      <div
-        style="margin-bottom: 5px;"
-      >
-        Due today: 
+        Due: 
         0
       </div>
       <div>

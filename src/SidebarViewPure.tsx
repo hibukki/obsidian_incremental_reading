@@ -3,8 +3,7 @@ import { Rating } from "ts-fsrs";
 import { CardStats, IntervalPreviews, Priority } from "./types";
 
 export interface SidebarViewPureProps {
-	dueNowCount: number;
-	dueTodayCount: number;
+	dueCount: number;
 	totalCount: number;
 	status: string;
 	statusHappy: boolean;
@@ -27,8 +26,7 @@ export interface SidebarViewPureProps {
  * All data comes from props, making it easy to test.
  */
 export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
-	dueNowCount,
-	dueTodayCount,
+	dueCount,
 	totalCount,
 	status,
 	statusHappy,
@@ -58,18 +56,13 @@ export const SidebarViewPure: React.FC<SidebarViewPureProps> = ({
 					borderRadius: "5px",
 				}}
 			>
-				<div style={{ marginBottom: "5px" }}>
-					Due now: {dueNowCount}
-				</div>
-				<div style={{ marginBottom: "5px" }}>
-					Due today: {dueTodayCount}
-				</div>
+				<div style={{ marginBottom: "5px" }}>Due: {dueCount}</div>
 				<div>Total in queue: {totalCount}</div>
 			</div>
 
 			{/* Show Next button - primary only when there are notes to show */}
 			<button
-				className={dueNowCount > 0 ? "mod-cta" : ""}
+				className={dueCount > 0 ? "mod-cta" : ""}
 				style={{ marginBottom: "10px", width: "100%" }}
 				onClick={onShowNext}
 			>

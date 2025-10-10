@@ -8,7 +8,7 @@ import { NoteEntry, DEFAULT_PRIORITY } from "./types";
  */
 export function selectNextNote(dueNotes: NoteEntry[]): string | null {
 	if (dueNotes.length === 0) {
-		return null; // No notes due today
+		return null; // No notes due
 	}
 
 	// Sort by priority first (lower number = higher priority),

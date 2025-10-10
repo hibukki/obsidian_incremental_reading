@@ -319,7 +319,7 @@ export default class IncrementalReadingPlugin extends Plugin {
 		}
 
 		await this.queueManager.addToQueue(activeFile.path, 0);
-		new Notice(`Added "${activeFile.basename}" to queue (due today)`);
+		new Notice(`Added "${activeFile.basename}" to queue (due now)`);
 
 		// Update counters
 		if (this.onCountersChanged) {

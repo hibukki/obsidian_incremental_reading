@@ -15,8 +15,7 @@ interface SidebarViewProps {
  * Renders the pure SidebarViewPure component with data.
  */
 export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
-	const [dueNowCount, setDueNowCount] = useState<number>(0);
-	const [dueTodayCount, setDueTodayCount] = useState<number>(0);
+	const [dueCount, setDueCount] = useState<number>(0);
 	const [totalCount, setTotalCount] = useState<number>(0);
 	const [status, setStatus] = useState<string>("");
 	const [statusHappy, setStatusHappy] = useState<boolean>(false);
@@ -32,8 +31,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 	const updateCounters = async () => {
 		// Use cache for UI display - it's okay if it's slightly stale
 		const stats = await plugin.queueManager.getQueueStats(true);
-		setDueNowCount(stats.dueNow);
-		setDueTodayCount(stats.dueToday);
+		setDueCount(stats.due);
 		setTotalCount(stats.total);
 	};
 
@@ -125,8 +123,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({ app, plugin }) => {
 
 	return (
 		<SidebarViewPure
-			dueNowCount={dueNowCount}
-			dueTodayCount={dueTodayCount}
+			dueCount={dueCount}
 			totalCount={totalCount}
 			status={status}
 			statusHappy={statusHappy}
